@@ -1,29 +1,13 @@
 {
-  "name": "@efikcoineternal/blockchain",
-  "version": "1.0.0",
-  "description": "Metadata and assets for EfikCoin Eternal (ECE) token – includes token list, manifest, and other blockchain resources.",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "validate": "node scripts/validate-json.js"
+    "build": "echo 'Build complete'",
+    "serve": "python -m http.server 3000",
+    "android:build": "npx cap add android && npx cap build android --release",
+    "sdk:publish": "npm publish"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/efikcoineternal/blockchain.git"
-  },
-  "keywords": [
-    "efikcoin",
-    "ece",
-    "token",
-    "blockchain",
-    "bsc",
-    "defi",
-    "tokenlist"
-  ],
-  "author": "EfikCoin Eternal",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/efikcoineternal/blockchain/issues"
-  },
-  "homepage": "https://github.com/efikcoineternal/blockchain#readme"
+  "devDependencies": {
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/core": "^5.0.0"
+  }
 }
