@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ECE Wallet Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-900 text-white p-6">
+    <h1 class="text-3xl font-bold text-amber-400 mb-6">Admin Dashboard – User Actions</h1>
+    <div id="actionsList" class="space-y-2"></div>
+
+    <script>
+        const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function loadActions() {
+            const { data, error } = await supabase
+                .from('user_actions')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) {
+                document.getElementById('actionsList').innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+                return;
+            }
+            const container = document.getElementById('actionsList');
+            container.innerHTML = '';
+            data.forEach(action => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-800 p-3 rounded';
+                div.innerHTML = `
+                    <div><span class="text-amber-400">${action.action}</span> – <span class="text-gray-400">${action.wallet_address}</span></div>
+                    <div class="text-sm text-gray-500">${new Date(action.created_at).toLocaleString()}</div>
+                    <div class="text-xs text-gray-600">${JSON.stringify(action.details)}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        loadActions();
+    </script>
+</body>
+</html>
