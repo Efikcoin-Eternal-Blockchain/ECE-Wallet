@@ -1,44 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    // In index.html - Replace API calls with backend calls
-
-// OLD (UNSAFE):
-// const response = await axios.get(`https://api.dexscreener.com/latest/dex/search?q=${CONTRACT_ADDRESS}`);
-
-// NEW (SAFE):
-async function fetchPriceData() {
-    try {
-        const response = await axios.post('https://api.yourdomain.com/api/price', {
-            contractAddress: CONTRACT_ADDRESS
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Price fetch error:', error);
-    }
-}
-
-async function submitWithdrawal(amount, address, twoFACode) {
-    try {
-        const signature = await signTransaction(amount, address);
-        
-        const response = await axios.post('https://api.yourdomain.com/api/withdraw', {
-            userId: currentUser.userId,
-            amount,
-            address,
-            twoFACode,
-            signature
-        }, {
-            headers: {
-                'Authorization': 'Bearer ' + getCurrentToken()
-            }
-        });
-        
-        return response.data;
-    } catch (error) {
-        console.error('Withdrawal error:', error);
-    }
-}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EfikCoin Eternal - Complete Decentralized Wallet</title>
@@ -1153,3 +1115,41 @@ async function submitWithdrawal(amount, address, twoFACode) {
     </script>
 </body>
 </html>
+// In index.html - Replace API calls with backend calls
+
+// OLD (UNSAFE):
+// const response = await axios.get(`https://api.dexscreener.com/latest/dex/search?q=${CONTRACT_ADDRESS}`);
+
+// NEW (SAFE):
+async function fetchPriceData() {
+    try {
+        const response = await axios.post('https://api.yourdomain.com/api/price', {
+            contractAddress: CONTRACT_ADDRESS
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Price fetch error:', error);
+    }
+}
+
+async function submitWithdrawal(amount, address, twoFACode) {
+    try {
+        const signature = await signTransaction(amount, address);
+        
+        const response = await axios.post('https://api.yourdomain.com/api/withdraw', {
+            userId: currentUser.userId,
+            amount,
+            address,
+            twoFACode,
+            signature
+        }, {
+            headers: {
+                'Authorization': 'Bearer ' + getCurrentToken()
+            }
+        });
+        
+        return response.data;
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+    }
+}
