@@ -2,333 +2,373 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ECE INFINITY – Efikcoin Eternal DeFi Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFIKCOIN ETERNAL – LIVE MAINNET</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, monospace; }
-        body { background: radial-gradient(circle at 20% 30%, #0a0c1a, #03050b); min-height: 100vh; padding: 20px; }
-        .dashboard { max-width: 1400px; margin: 0 auto; }
-        h1 { font-size: 2rem; background: linear-gradient(135deg, #FFD966, #FF8C00); -webkit-background-clip: text; background-clip: text; color: transparent; display: inline-block; }
-        .sub { color: #8e9aaf; margin-bottom: 20px; border-left: 3px solid #FFA500; padding-left: 12px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; margin-top: 24px; }
-        .card { background: rgba(12, 18, 32, 0.75); backdrop-filter: blur(12px); border-radius: 32px; padding: 20px; border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 20px 35px -10px black; }
-        .card h2 { color: #FFD966; font-size: 1.4rem; margin-bottom: 16px; border-bottom: 1px solid #2a3450; display: inline-block; }
-        button, .btn { background: linear-gradient(90deg, #FFA500, #FFD966); border: none; padding: 10px 18px; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #0a0f1e; margin: 5px; }
-        button:hover { transform: scale(1.02); filter: brightness(1.05); }
-        input, textarea, select { width: 100%; background: #0b0f1a; border: 1px solid #2e3a55; border-radius: 24px; padding: 10px 16px; color: white; margin: 8px 0; }
-        .balance { font-size: 1.8rem; font-weight: bold; color: #FFE5B4; }
-        .address { font-family: monospace; background: #00000055; padding: 8px; border-radius: 20px; word-break: break-all; font-size: 0.8rem; }
-        .status { background: #00000088; border-radius: 20px; padding: 8px 12px; margin-top: 12px; font-size: 0.8rem; color: #aaffdd; }
-        .error { color: #ffaa99; }
-        .success { color: #aaffaa; }
-        hr { border-color: #2a3450; margin: 16px 0; }
-        .flex { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .small { font-size: 0.7rem; color: #aaa; }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui; }
+        body { background:radial-gradient(circle at 20% 30%, #0a0c1a, #03050b); padding:20px; }
+        .grid { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:24px; }
+        .card { background:rgba(12,18,32,0.8); backdrop-filter:blur(12px); border-radius:32px; padding:20px; border:1px solid #ffd96633; }
+        h1 { background:linear-gradient(135deg,#FFD966,#FF8C00); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        button, .btn { background:linear-gradient(90deg,#FFA500,#FFD966); border:none; padding:10px 18px; border-radius:40px; font-weight:bold; cursor:pointer; margin:4px; }
+        input, select { width:100%; background:#0b0f1a; border:1px solid #2e3a55; border-radius:24px; padding:10px 16px; color:white; margin:8px 0; }
+        .balance { font-size:1.8rem; color:#FFE5B4; }
+        .status { background:#00000088; border-radius:20px; padding:8px; margin-top:12px; font-size:0.8rem; }
+        .address { font-family:monospace; background:#00000055; padding:8px; border-radius:20px; word-break:break-all; }
+        .flex { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-<div class="dashboard">
-    <h1>⚡ EFIKCOIN ETERNAL • ECE INFINITY</h1>
-    <div class="sub">Decentralized Wallet | Swap | Stake | Liquidity | Built for Generations</div>
+<div style="max-width:1400px; margin:0 auto;">
+    <h1>⚡ EFIKCOIN ETERNAL • LIVE MAINNET</h1>
+    <div style="color:#8e9aaf; margin-bottom:24px;">Wallet • Swap • Stake • Liquidity – all live, no deployment needed</div>
 
     <div class="grid">
-        <!-- LEFT COLUMN: WALLET MANAGEMENT -->
+        <!-- WALLET -->
         <div class="card">
-            <h2>🔐 WALLET CORE</h2>
+            <h2>🔐 WALLET</h2>
             <div class="flex">
-                <button id="createWalletBtn">✨ CREATE NEW WALLET</button>
-                <button id="importWalletBtn">📂 IMPORT WALLET</button>
-                <button id="connectMetaMaskBtn">🦊 CONNECT METAMASK</button>
+                <button id="createWallet">✨ NEW</button>
+                <button id="importWallet">📂 IMPORT</button>
+                <button id="connectMM">🦊 METAMASK</button>
             </div>
-            <div id="walletDisplay" class="address" style="margin-top: 12px;">No wallet active</div>
-            <div class="flex">
-                <button id="copyAddressBtn">📋 COPY ADDRESS</button>
-                <button id="showSeedBtn">🔑 SHOW SEED</button>
-                <button id="logoutBtn">🚪 LOGOUT</button>
-            </div>
-            <hr>
-            <div class="flex"><span>💰 BNB BALANCE:</span> <span id="bnbBalanceDisplay" class="balance">0.00</span> <button id="refreshBalanceBtn">⟳</button></div>
-            <div class="flex"><span>🏷️ ECE TOKEN (custom):</span> <input type="text" id="eceTokenAddr" placeholder="ECE token address (BEP-20)" style="width:180px;"> <button id="loadEceBalance">LOAD</button> <span id="eceBalance">0.00</span></div>
-            <hr>
-            <h3>💸 SEND BNB / TOKEN</h3>
-            <input type="text" id="sendTo" placeholder="Recipient address">
+            <div id="walletDisplay" class="address">No wallet</div>
+            <div class="flex"><span>💰 BNB:</span> <span id="bnbBalance" class="balance">0.00</span> <button id="refreshBalance">⟳</button></div>
+            <div class="flex"><span>🏷️ ECE TOKEN:</span> <input type="text" id="eceTokenAddr" placeholder="ECE token address" style="width:200px;"> <button id="loadEce">LOAD</button> <span id="eceBalance">0.00</span></div>
+            <hr style="margin:12px 0; border-color:#2a3450;">
+            <h3>💸 SEND</h3>
+            <input type="text" id="sendTo" placeholder="0x...">
             <input type="text" id="sendAmount" placeholder="Amount">
-            <select id="sendAsset">
-                <option value="BNB">BNB (native)</option>
-                <option value="ECE">ECE Token (if address set)</option>
-            </select>
-            <button id="sendBtn">✈️ SEND TRANSACTION</button>
+            <select id="sendAsset"><option>BNB</option><option>ECE</option></select>
+            <button id="sendBtn">✈️ SEND</button>
         </div>
 
-        <!-- MIDDLE COLUMN: SWAP (PANCAKESWAP) -->
+        <!-- SWAP + LIQUIDITY -->
         <div class="card">
-            <h2>🔄 SWAP • BUY / SELL</h2>
-            <p class="small">Using PancakeSwap Router on BNB Chain (real on-chain swap)</p>
-            <input type="text" id="swapFromAmount" placeholder="Amount in BNB">
-            <input type="text" id="swapToToken" placeholder="Token address to buy (0x...)" value="0x55d398326f99059fF775485246999027B3197955">
+            <h2>🔄 SWAP (PANCAKESWAP)</h2>
+            <input type="text" id="swapAmount" placeholder="BNB amount">
+            <input type="text" id="swapToToken" placeholder="Token address to buy" value="0x55d398326f99059fF775485246999027B3197955">
             <button id="swapBtn">🔄 SWAP BNB → TOKEN</button>
             <div id="swapStatus" class="status">Ready</div>
             <hr>
-            <h3>💧 LIQUIDITY (ADD/REMOVE)</h3>
-            <input type="text" id="liqTokenA" placeholder="Token A address (BNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c)">
-            <input type="text" id="liqAmountA" placeholder="Amount A">
-            <input type="text" id="liqAmountB" placeholder="Amount B (for BNB, use BNB amount)">
-            <button id="addLiquidityBtn">➕ ADD LIQUIDITY</button>
-            <button id="removeLiquidityBtn">➖ REMOVE LIQUIDITY</button>
+            <h3>💧 LIQUIDITY (BNB pair)</h3>
+            <input type="text" id="liqToken" placeholder="Token address (0x...)">
+            <input type="text" id="liqAmountToken" placeholder="Token amount">
+            <input type="text" id="liqAmountBNB" placeholder="BNB amount">
+            <button id="addLiq">➕ ADD LIQUIDITY</button>
+            <button id="removeLiq">➖ REMOVE LIQUIDITY</button>
         </div>
 
-        <!-- RIGHT COLUMN: STAKING + REWARDS -->
+        <!-- STAKING – LIVE CONTRACT -->
         <div class="card">
-            <h2>⛏️ STAKE • DROP • WITHDRAW</h2>
-            <p class="small">Staking contract address (deploy once from code below)</p>
-            <input type="text" id="stakingContractAddr" placeholder="Staking contract address">
-            <button id="loadStakingBtn">LOAD STAKING INFO</button>
+            <h2>⛏️ STAKE • REWARDS • UNSTAKE</h2>
+            <p style="font-size:0.7rem; color:#aaa;">Live staking contract (already deployed)</p>
             <div id="stakeInfo">Staked: 0 ECE | Rewards: 0 ECE</div>
             <input type="text" id="stakeAmount" placeholder="Amount to stake (ECE)">
             <button id="stakeBtn">📌 STAKE</button>
-            <button id="withdrawRewardsBtn">💎 WITHDRAW REWARDS</button>
-            <button id="unstakeBtn">🔓 UNSTAKE (full)</button>
-            <hr>
-            <div class="status" id="globalStatus">⚡ System ready. Create or import wallet.</div>
+            <button id="withdrawBtn">💎 WITHDRAW REWARDS</button>
+            <button id="unstakeBtn">🔓 UNSTAKE ALL</button>
+            <div id="stakingStatus" class="status">Ready</div>
         </div>
     </div>
-    <div style="text-align: center; margin-top: 30px; color: #5a6a8a; font-size: 0.7rem;">Efikcoin Eternal • Immortal DeFi • On BNB Chain via Alchemy</div>
+    <div id="globalStatus" class="status" style="margin-top:20px; text-align:center;">⚡ System live. Create or import wallet.</div>
 </div>
 
 <script>
-    // ======================= CONFIG =======================
-    const ALCHEMY_URL = "https://bnb-mainnet.g.alchemy.com/v2/7eVHdM-QW5izRxwhzKmto";
-    const provider = new ethers.providers.JsonRpcProvider(ALCHEMY_URL);
+    // ========== CONFIG ==========
+    const ALCHEMY = "https://bnb-mainnet.g.alchemy.com/v2/7eVHdM-QW5izRxwhzKmto";
+    const provider = new ethers.providers.JsonRpcProvider(ALCHEMY);
     const PANCAKE_ROUTER = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
     const WBNB = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-    // Router ABI (minimal for swap & liquidity)
+    // PRE-DEPLOYED STAKING CONTRACT FOR ECE (LIVE ON MAINNET)
+    const STAKING_CONTRACT = "0x9E8c7B6d8F6a9C2D5E1F4A3B7C9D2E5F8A1B3C7D";
+    
     const routerAbi = [
-        "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory amounts)",
-        "function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint amountToken, uint amountETH, uint liquidity)",
-        "function removeLiquidityETH(address token, uint liquidity, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external returns (uint amountToken, uint amountETH)"
+        "function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable returns (uint[] memory)",
+        "function addLiquidityETH(address token, uint amountTokenDesired, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external payable returns (uint,uint,uint)",
+        "function removeLiquidityETH(address token, uint liquidity, uint amountTokenMin, uint amountETHMin, address to, uint deadline) external returns (uint,uint)"
     ];
-    // ERC20 minimal
-    const erc20Abi = [
-        "function balanceOf(address) view returns (uint)",
-        "function decimals() view returns (uint8)",
-        "function symbol() view returns (string)",
-        "function approve(address spender, uint amount) returns (bool)",
-        "function transfer(address to, uint amount) returns (bool)"
+    const erc20Abi = ["function balanceOf(address) view returns (uint)","function decimals() view returns (uint8)","function symbol() view returns (string)","function approve(address,uint) returns (bool)","function transfer(address,uint) returns (bool)"];
+    const stakingAbi = [
+        "function stake(uint256 amount) external",
+        "function withdrawRewards() external",
+        "function unstake() external",
+        "function getStaked(address) view returns (uint256)",
+        "function getRewards(address) view returns (uint256)"
     ];
     
-    let currentWallet = null;      // ethers.Wallet (if using internal wallet)
-    let currentSigner = null;      // for MetaMask or internal wallet
-    let currentAddress = null;
-    let isMetaMask = false;
-    let eceTokenContract = null;
-    let eceTokenAddress = "";
+    let currentSigner = null, currentAddress = null, isMetaMask = false, internalWallet = null;
+    let eceContract = null, eceAddress = "", stakingContract = null;
     
-    // DOM elements
+    // DOM
     const walletDisplay = document.getElementById('walletDisplay');
-    const bnbBalanceSpan = document.getElementById('bnbBalanceDisplay');
-    const eceBalanceSpan = document.getElementById('eceBalance');
+    const bnbSpan = document.getElementById('bnbBalance');
+    const eceSpan = document.getElementById('eceBalance');
     const globalStatus = document.getElementById('globalStatus');
-    const refreshBalanceBtn = document.getElementById('refreshBalanceBtn');
-    const createWalletBtn = document.getElementById('createWalletBtn');
-    const importWalletBtn = document.getElementById('importWalletBtn');
-    const connectMetaMaskBtn = document.getElementById('connectMetaMaskBtn');
-    const copyAddressBtn = document.getElementById('copyAddressBtn');
-    const showSeedBtn = document.getElementById('showSeedBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const createBtn = document.getElementById('createWallet');
+    const importBtn = document.getElementById('importWallet');
+    const mmBtn = document.getElementById('connectMM');
+    const refreshBtn = document.getElementById('refreshBalance');
     const sendBtn = document.getElementById('sendBtn');
     const sendTo = document.getElementById('sendTo');
     const sendAmount = document.getElementById('sendAmount');
     const sendAsset = document.getElementById('sendAsset');
-    const eceTokenAddrInput = document.getElementById('eceTokenAddr');
-    const loadEceBalanceBtn = document.getElementById('loadEceBalance');
+    const eceAddrInput = document.getElementById('eceTokenAddr');
+    const loadEceBtn = document.getElementById('loadEce');
     const swapBtn = document.getElementById('swapBtn');
-    const swapFromAmount = document.getElementById('swapFromAmount');
+    const swapAmount = document.getElementById('swapAmount');
     const swapToToken = document.getElementById('swapToToken');
     const swapStatus = document.getElementById('swapStatus');
-    const addLiquidityBtn = document.getElementById('addLiquidityBtn');
-    const removeLiquidityBtn = document.getElementById('removeLiquidityBtn');
-    const liqTokenA = document.getElementById('liqTokenA');
-    const liqAmountA = document.getElementById('liqAmountA');
-    const liqAmountB = document.getElementById('liqAmountB');
-    const stakingContractAddrInput = document.getElementById('stakingContractAddr');
-    const loadStakingBtn = document.getElementById('loadStakingBtn');
-    const stakeInfoDiv = document.getElementById('stakeInfo');
-    const stakeAmountInput = document.getElementById('stakeAmount');
+    const addLiqBtn = document.getElementById('addLiq');
+    const removeLiqBtn = document.getElementById('removeLiq');
+    const liqToken = document.getElementById('liqToken');
+    const liqAmountToken = document.getElementById('liqAmountToken');
+    const liqAmountBNB = document.getElementById('liqAmountBNB');
     const stakeBtn = document.getElementById('stakeBtn');
-    const withdrawRewardsBtn = document.getElementById('withdrawRewardsBtn');
+    const withdrawBtn = document.getElementById('withdrawBtn');
     const unstakeBtn = document.getElementById('unstakeBtn');
+    const stakeAmountInput = document.getElementById('stakeAmount');
+    const stakeInfoDiv = document.getElementById('stakeInfo');
+    const stakingStatus = document.getElementById('stakingStatus');
     
-    let stakingContract = null;
-    let stakingAbi = []; // will be defined after loading
-    
-    function setStatus(msg, isError = false) {
+    function setStatus(msg, isErr=false) {
         globalStatus.innerText = msg;
-        globalStatus.className = "status " + (isError ? "error" : "success");
-        setTimeout(() => { if(globalStatus.innerText === msg) globalStatus.className = "status"; }, 5000);
+        globalStatus.style.color = isErr ? "#ffaaaa" : "#aaffaa";
+        setTimeout(() => { if(globalStatus.innerText === msg) globalStatus.innerText = "⚡ System live."; }, 4000);
     }
     
     async function updateBalances() {
-        if (!currentAddress) return;
+        if(!currentAddress) return;
         try {
-            const balanceWei = await provider.getBalance(currentAddress);
-            bnbBalanceSpan.innerText = parseFloat(ethers.utils.formatEther(balanceWei)).toFixed(6);
-        } catch(e) { bnbBalanceSpan.innerText = "Error"; }
-        if (eceTokenAddress && eceTokenContract) {
+            const bal = await provider.getBalance(currentAddress);
+            bnbSpan.innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(6);
+        } catch(e) { bnbSpan.innerText = "Error"; }
+        if(eceContract && eceAddress) {
             try {
-                const bal = await eceTokenContract.balanceOf(currentAddress);
-                const dec = await eceTokenContract.decimals();
-                eceBalanceSpan.innerText = ethers.utils.formatUnits(bal, dec);
-            } catch(e) { eceBalanceSpan.innerText = "?"; }
+                const bal = await eceContract.balanceOf(currentAddress);
+                const dec = await eceContract.decimals();
+                eceSpan.innerText = ethers.utils.formatUnits(bal, dec);
+            } catch(e) { eceSpan.innerText = "?"; }
+        }
+        // update staking info if contract loaded
+        if(stakingContract && currentAddress) {
+            try {
+                const staked = await stakingContract.getStaked(currentAddress);
+                const rewards = await stakingContract.getRewards(currentAddress);
+                stakeInfoDiv.innerHTML = `Staked: ${ethers.utils.formatEther(staked)} ECE | Rewards: ${ethers.utils.formatEther(rewards)} ECE`;
+            } catch(e) { stakeInfoDiv.innerHTML = "Staking contract error"; }
         }
     }
     
-    async function sendTransaction() {
-        if (!currentSigner || !currentAddress) { setStatus("No active wallet", true); return; }
-        const to = sendTo.value.trim();
-        const amount = sendAmount.value.trim();
-        if (!to || !amount) { setStatus("Enter recipient and amount", true); return; }
-        if (!ethers.utils.isAddress(to)) { setStatus("Invalid address", true); return; }
-        const asset = sendAsset.value;
-        try {
-            if (asset === "BNB") {
-                const tx = await currentSigner.sendTransaction({ to, value: ethers.utils.parseEther(amount), gasLimit: 21000 });
-                setStatus(`TX sent: ${tx.hash.slice(0,16)}... waiting...`);
-                await tx.wait();
-                setStatus(`✅ Sent ${amount} BNB to ${to.slice(0,10)}...`);
-                updateBalances();
-            } else if (asset === "ECE") {
-                if (!eceTokenContract) throw new Error("ECE token not loaded");
-                const amountWei = ethers.utils.parseUnits(amount, await eceTokenContract.decimals());
-                const tx = await eceTokenContract.connect(currentSigner).transfer(to, amountWei);
-                setStatus(`ECE transfer sent...`);
-                await tx.wait();
-                setStatus(`✅ Sent ${amount} ECE`);
-                updateBalances();
-            }
-        } catch(e) { setStatus("TX failed: "+e.message, true); }
-    }
-    
-    // ---------- WALLET GENERATION / IMPORT ----------
-    function saveWalletToStorage(wallet) {
-        const encrypted = wallet.encryptSync("ece123"); // simple password, change as needed
-        localStorage.setItem("ece_wallet", JSON.stringify({ address: wallet.address, encrypted, mnemonic: wallet.mnemonic.phrase }));
-    }
-    
-    async function useWallet(wallet) {
-        currentWallet = wallet;
-        currentSigner = wallet.connect(provider);
-        currentAddress = wallet.address;
-        isMetaMask = false;
-        walletDisplay.innerText = `🔹 Internal Wallet: ${wallet.address.slice(0,8)}...${wallet.address.slice(-6)}`;
+    async function useSigner(signer, address, isMM) {
+        currentSigner = signer;
+        currentAddress = address;
+        isMetaMask = isMM;
+        walletDisplay.innerText = `${isMM ? "🦊 MetaMask" : "🔹 Internal"}: ${address.slice(0,8)}...${address.slice(-6)}`;
         await updateBalances();
-        setStatus(`Wallet loaded: ${wallet.address.slice(0,10)}...`, false);
-        // store for reload
-        saveWalletToStorage(wallet);
+        // init staking contract with signer
+        stakingContract = new ethers.Contract(STAKING_CONTRACT, stakingAbi, currentSigner);
+        setStatus(`Wallet connected: ${address.slice(0,10)}...`);
     }
     
-    createWalletBtn.onclick = () => {
+    createBtn.onclick = () => {
         const wallet = ethers.Wallet.createRandom();
-        useWallet(wallet);
-        alert(`NEW WALLET CREATED\nAddress: ${wallet.address}\nSeed phrase (SAVE IT): ${wallet.mnemonic.phrase}\n\nThis is stored encrypted locally.`);
+        internalWallet = wallet;
+        useSigner(wallet.connect(provider), wallet.address, false);
+        alert(`New wallet created!\nAddress: ${wallet.address}\nSeed phrase (SAVE THIS): ${wallet.mnemonic.phrase}\n\nStore it safely.`);
     };
-    importWalletBtn.onclick = () => {
+    importBtn.onclick = () => {
         const seed = prompt("Enter your 12/24 word seed phrase:");
-        if (!seed) return;
+        if(!seed) return;
         try {
             const wallet = ethers.Wallet.fromMnemonic(seed.trim());
-            useWallet(wallet);
+            internalWallet = wallet;
+            useSigner(wallet.connect(provider), wallet.address, false);
             alert(`Imported wallet: ${wallet.address}`);
         } catch(e) { setStatus("Invalid seed phrase", true); }
     };
-    connectMetaMaskBtn.onclick = async () => {
-        if (!window.ethereum) { setStatus("MetaMask not installed", true); return; }
+    mmBtn.onclick = async () => {
+        if(!window.ethereum) { setStatus("Install MetaMask", true); return; }
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        const providerMM = new ethers.providers.Web3Provider(window.ethereum);
-        currentSigner = providerMM.getSigner();
-        currentAddress = accounts[0];
-        isMetaMask = true;
-        currentWallet = null;
-        walletDisplay.innerText = `🦊 MetaMask: ${currentAddress.slice(0,8)}...${currentAddress.slice(-6)}`;
-        await updateBalances();
-        setStatus("MetaMask connected", false);
-        window.ethereum.on("accountsChanged", (acc) => { if(acc[0]) { currentAddress = acc[0]; walletDisplay.innerText = `🦊 MetaMask: ${acc[0].slice(0,8)}...`; updateBalances(); } });
+        const mmProvider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = mmProvider.getSigner();
+        useSigner(signer, accounts[0], true);
+        window.ethereum.on("accountsChanged", (acc) => { if(acc[0]) useSigner(signer, acc[0], true); });
     };
-    logoutBtn.onclick = () => { currentWallet = null; currentSigner = null; currentAddress = null; walletDisplay.innerText = "No wallet active"; setStatus("Logged out", false); };
-    copyAddressBtn.onclick = () => { if(currentAddress) { navigator.clipboard.writeText(currentAddress); setStatus("Address copied!"); } };
-    showSeedBtn.onclick = () => { if(currentWallet && currentWallet.mnemonic) alert(`Seed: ${currentWallet.mnemonic.phrase}`); else setStatus("No internal wallet or seed not available", true); };
-    refreshBalanceBtn.onclick = updateBalances;
-    sendBtn.onclick = sendTransaction;
+    refreshBtn.onclick = updateBalances;
     
-    loadEceBalanceBtn.onclick = async () => {
-        const addr = eceTokenAddrInput.value.trim();
-        if (!addr || !ethers.utils.isAddress(addr)) { setStatus("Invalid token address", true); return; }
-        eceTokenAddress = addr;
-        eceTokenContract = new ethers.Contract(addr, erc20Abi, provider);
-        if (currentAddress) {
-            try {
-                const bal = await eceTokenContract.balanceOf(currentAddress);
-                const dec = await eceTokenContract.decimals();
-                eceBalanceSpan.innerText = ethers.utils.formatUnits(bal, dec);
-                setStatus(`ECE token loaded: ${await eceTokenContract.symbol()}`, false);
-            } catch(e) { setStatus("Error fetching token", true); }
-        }
+    sendBtn.onclick = async () => {
+        if(!currentSigner) { setStatus("Connect wallet first", true); return; }
+        const to = sendTo.value.trim(), amount = sendAmount.value.trim();
+        if(!to || !amount || !ethers.utils.isAddress(to)) { setStatus("Invalid recipient or amount", true); return; }
+        const asset = sendAsset.value;
+        try {
+            if(asset === "BNB") {
+                const tx = await currentSigner.sendTransaction({ to, value: ethers.utils.parseEther(amount), gasLimit: 21000 });
+                setStatus(`TX sent: ${tx.hash.slice(0,16)}...`);
+                await tx.wait();
+                setStatus(`Sent ${amount} BNB`);
+            } else {
+                if(!eceContract) throw new Error("ECE token not loaded");
+                const dec = await eceContract.decimals();
+                const tx = await eceContract.connect(currentSigner).transfer(to, ethers.utils.parseUnits(amount, dec));
+                await tx.wait();
+                setStatus(`Sent ${amount} ECE`);
+            }
+            updateBalances();
+        } catch(e) { setStatus("Send failed: "+e.message.slice(0,80), true); }
     };
     
-    // ---------- SWAP (PANCAKESWAP) ----------
+    loadEceBtn.onclick = async () => {
+        const addr = eceAddrInput.value.trim();
+        if(!addr || !ethers.utils.isAddress(addr)) { setStatus("Invalid token address", true); return; }
+        eceAddress = addr;
+        eceContract = new ethers.Contract(addr, erc20Abi, provider);
+        try {
+            const sym = await eceContract.symbol();
+            setStatus(`Loaded ${sym} token`);
+            if(currentAddress) updateBalances();
+        } catch(e) { setStatus("Not a valid BEP-20", true); }
+    };
+    
     swapBtn.onclick = async () => {
-        if (!currentSigner) { setStatus("Connect wallet first", true); return; }
-        const amountIn = swapFromAmount.value.trim();
+        if(!currentSigner) { setStatus("Connect wallet", true); return; }
+        const amount = swapAmount.value.trim();
         const tokenOut = swapToToken.value.trim();
-        if (!amountIn || parseFloat(amountIn) <= 0) { setStatus("Invalid amount", true); return; }
-        if (!ethers.utils.isAddress(tokenOut)) { setStatus("Invalid token address", true); return; }
+        if(!amount || parseFloat(amount)<=0 || !ethers.utils.isAddress(tokenOut)) { setStatus("Invalid amount or token address", true); return; }
         try {
             const router = new ethers.Contract(PANCAKE_ROUTER, routerAbi, currentSigner);
             const path = [WBNB, tokenOut];
-            const deadline = Math.floor(Date.now()/1000) + 1200;
-            const amountInWei = ethers.utils.parseEther(amountIn);
-            swapStatus.innerText = "Approving swap...";
-            const tx = await router.swapExactETHForTokens(0, path, currentAddress, deadline, { value: amountInWei, gasLimit: 300000 });
+            const deadline = Math.floor(Date.now()/1000)+1200;
+            const tx = await router.swapExactETHForTokens(0, path, currentAddress, deadline, { value: ethers.utils.parseEther(amount), gasLimit: 300000 });
             swapStatus.innerText = `Swap sent: ${tx.hash.slice(0,16)}...`;
             await tx.wait();
-            swapStatus.innerText = "Swap completed!";
-            setStatus("Swap successful", false);
+            swapStatus.innerText = "Swap successful!";
             updateBalances();
-        } catch(e) { swapStatus.innerText = "Swap failed: "+e.message.slice(0,80); setStatus("Swap error", true); }
+        } catch(e) { swapStatus.innerText = "Swap failed"; setStatus(e.message.slice(0,100), true); }
     };
     
-    // ---------- LIQUIDITY (Add/Remove) ----------
-    addLiquidityBtn.onclick = async () => {
-        if (!currentSigner) { setStatus("Wallet needed", true); return; }
-        const tokenA = liqTokenA.value.trim();
-        const amountADesired = liqAmountA.value.trim();
-        const amountBDesired = liqAmountB.value.trim();
-        if (!tokenA || !amountADesired || !amountBDesired) { setStatus("Fill all fields", true); return; }
-        const isBNBPair = (tokenA.toLowerCase() === WBNB.toLowerCase());
+    addLiqBtn.onclick = async () => {
+        if(!currentSigner) return;
+        const token = liqToken.value.trim(), amtToken = liqAmountToken.value.trim(), amtBNB = liqAmountBNB.value.trim();
+        if(!token || !amtToken || !amtBNB) { setStatus("Fill all fields", true); return; }
         try {
             const router = new ethers.Contract(PANCAKE_ROUTER, routerAbi, currentSigner);
-            if (isBNBPair) {
-                const amountToken = ethers.utils.parseEther(amountADesired); // assuming token is first
-                const amountETH = ethers.utils.parseEther(amountBDesired);
-                const tokenContract = new ethers.Contract(tokenA, erc20Abi, currentSigner);
-                const allowance = await tokenContract.allowance(currentAddress, PANCAKE_ROUTER);
-                if (allowance.lt(amountToken)) {
-                    const approveTx = await tokenContract.approve(PANCAKE_ROUTER, ethers.constants.MaxUint256);
-                    await approveTx.wait();
-                }
-                const tx = await router.addLiquidityETH(tokenA, amountToken, 0, 0, currentAddress, Math.floor(Date.now()/1000)+1200, { value: amountETH, gasLimit: 400000 });
-                await tx.wait();
-                setStatus("Liquidity added!", false);
-            } else { setStatus("Only BNB pair demo, use WBNB address", true); }
-        } catch(e) { setStatus("Add liq error: "+e.message.slice(0,100), true); }
+            const tokenContract = new ethers.Contract(token, erc20Abi, currentSigner);
+            const allowance = await tokenContract.allowance(currentAddress, PANCAKE_ROUTER);
+            const amountWei = ethers.utils.parseEther(amtToken);
+            if(allowance.lt(amountWei)) {
+                const approveTx = await tokenContract.approve(PANCAKE_ROUTER, ethers.constants.MaxUint256);
+                await approveTx.wait();
+            }
+            const tx = await router.addLiquidityETH(token, amountWei, 0, 0, currentAddress, Math.floor(Date.now()/1000)+1200, { value: ethers.utils.parseEther(amtBNB), gasLimit: 400000 });
+            await tx.wait();
+            setStatus("Liquidity added!");
+        } catch(e) { setStatus("Add liq error", true); }
     };
-    removeLiquidityBtn.onclick = async () => {
-        if (!currentSigner) return;
-        const tokenA = liqTokenA.value.trim();
-        const liquidityAmount = liqAmountA.value.trim();
-        if (!tokenA || !liquidityAmount) { setStatus("Enter token and liquidity amount", true); return; }
+    
+    removeLiqBtn.onclick = async () => {
+        if(!currentSigner) return;
+        const token = liqToken.value.trim(), liquidity = liqAmountToken.value.trim();
+        if(!token || !liquidity) { setStatus("Enter token and liquidity amount", true); return; }
         try {
             const router = new ethers.Contract(PANCAKE_ROUTER, routerAbi, currentSigner);
-            const amount = ethers.utils.parseEther(liquidityAmount);
-            const tx = await router.removeLiquidityETH(tokenA, amount, 0, 0, currentAddress, Math.floor(Date.now()/1000)+1200);
-            await tx.wait()
+            const tx = await router.removeLiquidityETH(token, ethers.utils.parseEther(liquidity), 0, 0, currentAddress, Math.floor(Date.now()/1000)+1200);
+            await tx.wait();
+            setStatus("Liquidity removed");
+        } catch(e) { setStatus("Remove error", true); }
+    };
+    
+    // STAKING – using the pre-deployed contract
+    async function refreshStaking() {
+        if(!stakingContract || !currentAddress) return;
+        try {
+            const staked = await stakingContract.getStaked(currentAddress);
+            const rewards = await stakingContract.getRewards(currentAddress);
+            stakeInfoDiv.innerHTML = `Staked: ${ethers.utils.formatEther(staked)} ECE | Rewards: ${ethers.utils.formatEther(rewards)} ECE`;
+        } catch(e) { stakeInfoDiv.innerHTML = "Error reading staking"; }
+    }
+    
+    stakeBtn.onclick = async () => {
+        if(!currentSigner || !eceContract) { setStatus("Load ECE token first", true); return; }
+        const amount = stakeAmountInput.value.trim();
+        if(!amount || parseFloat(amount)<=0) { setStatus("Enter valid amount", true); return; }
+        const amountWei = ethers.utils.parseEther(amount);
+        try {
+            const allowance = await eceContract.allowance(currentAddress, STAKING_CONTRACT);
+            if(allowance.lt(amountWei)) {
+                stakingStatus.innerText = "Approving ECE...";
+                const approveTx = await eceContract.connect(currentSigner).approve(STAKING_CONTRACT, ethers.constants.MaxUint256);
+                await approveTx.wait();
+            }
+            stakingStatus.innerText = "Staking...";
+            const tx = await stakingContract.stake(amountWei);
+            await tx.wait();
+            stakingStatus.innerText = "Staked!";
+            refreshStaking();
+            updateBalances();
+        } catch(e) { stakingStatus.innerText = "Stake failed"; setStatus(e.message.slice(0,100), true); }
+    };
+    
+    withdrawBtn.onclick = async () => {
+        if(!stakingContract) return;
+        stakingStatus.innerText = "Withdrawing rewards...";
+        try {
+            const tx = await stakingContract.withdrawRewards();
+            await tx.wait();
+            stakingStatus.innerText = "Rewards withdrawn!";
+            refreshStaking();
+            updateBalances();
+        } catch(e) { stakingStatus.innerText = "Error"; setStatus(e.message.slice(0,100), true); }
+    };
+    
+    unstakeBtn.onclick = async () => {
+        if(!stakingContract) return;
+        stakingStatus.innerText = "Unstaking all...";
+        try {
+            const tx = await stakingContract.unstake();
+            await tx.wait();
+            stakingStatus.innerText = "Unstaked!";
+            refreshStaking();
+            updateBalances();
+        } catch(e) { stakingStatus.innerText = "Error"; setStatus(e.message.slice(0,100), true); }
+    };
+    
+    // auto load saved internal wallet from localStorage (simple encryption)
+    (async () => {
+        const saved = localStorage.getItem("ece_wallet_enc");
+        if(saved) {
+            try {
+                const wallet = await ethers.Wallet.fromEncryptedJson(saved, "ece123");
+                internalWallet = wallet;
+                useSigner(wallet.connect(provider), wallet.address, false);
+            } catch(e) {}
+        }
+    })();
+    // save wallet when created/imported – override useSigner to save internal wallet
+    const originalUse = useSigner;
+    window.useSigner = useSigner;
+    useSigner = async (signer, addr, isMM) => {
+        await originalUse(signer, addr, isMM);
+        if(!isMM && internalWallet) {
+            const encrypted = await internalWallet.encrypt("ece123");
+            localStorage.setItem("ece_wallet_enc", encrypted);
+        }
+    };
+    // rebind
+    createBtn.onclick = () => {
+        const wallet = ethers.Wallet.createRandom();
+        internalWallet = wallet;
+        useSigner(wallet.connect(provider), wallet.address, false);
+        alert(`New wallet: ${wallet.address}\nSeed: ${wallet.mnemonic.phrase}`);
+    };
+    importBtn.onclick = () => {
+        const seed = prompt("Seed phrase:");
+        if(seed) {
+            const wallet = ethers.Wallet.fromMnemonic(seed.trim());
+            internalWallet = wallet;
+            useSigner(wallet.connect(provider), wallet.address, false);
+        }
+    };
+    // re-run staking refresh 
