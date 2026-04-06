@@ -1,42 +1,56 @@
-# EfikCoin Eternal Wallet
+# EfikCoin Eternal – Official Wallet
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-blue)](https://efikcoineternal.github.io/ECE-Wallet/)
-[![PWA](https://img.shields.io/badge/PWA-Installable-brightgreen)](https://efikcoineternal.github.io/ECE-Wallet/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-blue)](https://efikcoin-eternal-blockchain.github.io/ECE-Wallet/)
+[![PWA](https://img.shields.io/badge/PWA-Installable-brightgreen)](https://efikcoin-eternal-blockchain.github.io/ECE-Wallet/)
+[![Contract Verified](https://img.shields.io/badge/Contract-Verified-success)](https://bscscan.com/address/0x9F8C29E496ECB6C39c221458f211234DfCB233E0)
 
-**EfikCoin Eternal (ECE)** is a decentralized finance ecosystem on Binance Smart Chain. This repository contains the official PWA wallet – no email required, fully self‑custodial.
+**EfikCoin Eternal (ECE)** is a decentralized finance (DeFi) ecosystem on Binance Smart Chain. This repository contains the **official web wallet and dApp** – a Progressive Web App (PWA) that works on desktop and mobile, and can be installed as a native app.
+
+---
 
 ## 🌟 Live Wallet
 
-**URL:** [https://efikcoineternal.github.io/ECE-Wallet/](https://efikcoineternal.github.io/ECE-Wallet/)
+**URL:** [https://efikcoin-eternal-blockchain.github.io/ECE-Wallet/](https://efikcoin-eternal-blockchain.github.io/ECE-Wallet/)
+
+- **Install on Android:** Open in Chrome → “Add to Home Screen” / “Install app”.
+- **Install on iOS:** Open in Safari → share icon → “Add to Home Screen”.
+
+---
 
 ## 🔥 Features
 
-- Create new wallet (12‑word seed phrase) or import existing (seed/private key)
-- Check ECE & BNB balance
-- Stake ECE (30–365 days, up to 750% APR)
-- Airdrop manager (owner only)
-- Loan requests (ECE, BNB, USDT, BTC, ETH) with admin approval
-- Live transaction history (BscScan API)
-- Contract read/write (transfer, approve)
-- Buy / Sell links to PancakeSwap
-- Admin panel (owner only)
-- Live price chart (DexScreener)
-- Installable as PWA on Android/iOS
+| Category | Details |
+|----------|---------|
+| **Wallet** | Create new wallet (12‑word seed phrase) or import existing (seed/private key). Password protection. |
+| **Staking** | Lock ECE for 30–365 days, earn up to **750% APR**, claim rewards. |
+| **Airdrop** | Owner‑only tool – distribute tokens via CSV upload or manual entry. |
+| **Loans** | Request loans in ECE, BNB, USDT, BTC, or ETH; admin approval with email notifications. |
+| **Transaction History** | Real‑time token transfers from BscScan API. |
+| **Contract Interaction** | Read functions (name, symbol, total supply, balance, owner) and write (transfer, approve). |
+| **Buy / Sell** | Direct links to PancakeSwap + embedded swap widget. |
+| **Deposit / Withdraw** | Deposit via QR code or address; send ECE or native tokens with transaction status. |
+| **Referral System** | Each user gets a unique referral link to grow the community. |
+| **Live Chart** | TradingView widget with real‑time price data. |
+| **Multi‑language** | 12 languages (auto‑detect + manual selector). |
+| **Admin Panel** | Visible only to contract owner – mint tokens, set pair, withdraw fees, broadcast messages, view user messages. |
+| **Support Chat** | Users can message admin; admin replies via dedicated admin panel. |
+| **PWA Ready** | Manifest + service worker → installable on any device. |
+
+---
 
 ## 📦 Smart Contract
 
-- **Address:** `0x9F8C29E496ECB6C39c221458f211234DfCB233E0`
+- **Contract Address (BSC):** `0x9F8C29E496ECB6C39c221458f211234DfCB233E0`
 - **Explorer:** [BscScan](https://bscscan.com/address/0x9F8C29E496ECB6C39c221458f211234DfCB233E0)
+- **Decimals:** 18
+- **Total Supply:** 1,000,000,000 ECE (mintable by owner)
 
-## 🚀 Install as App
+---
 
-- **Android (Chrome):** Open the link → “Add to Home Screen” / “Install app”.
-- **iOS (Safari):** Share icon → “Add to Home Screen”.
+## 🚀 Quick Start (Local Development)
 
-## 🛠️ Local Development
-
-```bash
-git clone https://github.com/efikcoineternal/ECE-Wallet.git
-cd ECE-Wallet
-npx serve.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/efikcoin-eternal-blockchain/ECE-Wallet.git
+   cd ECE-Wallet
