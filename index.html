@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- TradingView Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         body { background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060b); color: #e5e5e5; font-family: 'Inter', sans-serif; }
         .glass-card { background: rgba(20,20,20,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,215,0,0.2); border-radius: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; }
@@ -45,6 +47,8 @@
         .tx-status { font-size: 0.8rem; margin-top: 0.5rem; padding: 0.25rem; border-radius: 0.5rem; }
         .tx-success { background: #064e3b; color: #4ade80; }
         .tx-error { background: #7f1d1d; color: #f87171; }
+        .referral-box { background: #1e293b; border-radius: 0.75rem; padding: 0.5rem; font-family: monospace; word-break: break-all; }
+        .chart-container { height: 400px; margin-top: 1rem; border-radius: 1rem; overflow: hidden; }
     </style>
 </head>
 <body class="p-4 md:p-6 min-h-screen flex items-center justify-center">
@@ -60,6 +64,7 @@
             <div class="space-y-4">
                 <button id="createWalletBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-6 rounded-lg w-full">Create New Wallet</button>
                 <button id="importWalletBtn" class="btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg w-full">Import Existing Wallet</button>
+                <button id="loginBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-full">Login (Existing User)</button>
                 <div id="importSection" class="hidden mt-4">
                     <textarea id="importMnemonic" rows="2" placeholder="Enter 12-word seed phrase or private key (0x...)" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white"></textarea>
                     <button id="doImportBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mt-2 w-full">Import</button>
@@ -88,7 +93,7 @@
             </div>
         </div>
 
-        <!-- Forgot Password / Seed Recovery Modal -->
+        <!-- Forgot Password Modal -->
         <div id="forgotModal" class="hidden password-modal">
             <div class="password-modal-content">
                 <h2 class="text-xl font-bold text-amber-400 mb-4">Recover Wallet</h2>
@@ -100,7 +105,7 @@
             </div>
         </div>
 
-        <!-- Main Dashboard (appears after wallet creation/import) -->
+        <!-- Main Dashboard -->
         <div id="dashboardScreen" class="hidden space-y-6">
             <div class="text-center">
                 <img src="https://raw.githubusercontent.com/Efikcoinofficialecosystem/efikcoin-eternal/main/1772019882787.png" alt="ECE Logo" class="w-16 h-16 mx-auto rounded-full">
@@ -109,9 +114,9 @@
                 <div class="mt-1"><span class="verified-badge">✓ Verified Contract | 0x9F8C29...233E0</span></div>
             </div>
 
-            <!-- Wallet Info + Network + Logout -->
+            <!-- Wallet Info + Network + Logout + Referral -->
             <div class="glass-card p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 flex-wrap">
                     <div>
                         <p class="text-gray-400 text-sm">Your Address</p>
                         <p id="userAddress" class="font-mono text-sm break-all bg-black/30 p-2 rounded-lg"></p>
@@ -135,9 +140,18 @@
                     <button id="refreshBtn" class="btn bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm">🔄 Refresh</button>
                     <button id="logoutBtn" class="btn logout-btn hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm">🚪 Logout</button>
                 </div>
+                <!-- Referral Link (visible after login) -->
+                <div id="referralSection" class="mt-4 pt-3 border-t border-gray-700 hidden">
+                    <p class="text-sm text-amber-400 font-semibold">🔗 Your Referral Link</p>
+                    <div class="referral-box text-xs flex justify-between items-center gap-2">
+                        <span id="referralLink" class="break-all"></span>
+                        <button id="copyReferralBtn" class="btn bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs">Copy</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Share this link – when someone creates a wallet using it, you both earn rewards (coming soon).</p>
+                </div>
             </div>
 
-            <!-- Deposit / Withdraw Section -->
+            <!-- Deposit / Send Section -->
             <div class="glass-card p-4">
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
@@ -163,7 +177,7 @@
                 </div>
             </div>
 
-            <!-- Admin Panel (only visible to contract owner) -->
+            <!-- Admin Panel (owner only) -->
             <div id="adminPanel" class="glass-card p-5 border-2 border-amber-500/50 hidden">
                 <h2 class="text-2xl font-bold text-amber-400 mb-4">👑 Founder's Admin</h2>
                 <div class="grid md:grid-cols-4 gap-3">
@@ -190,7 +204,7 @@
             </div>
 
             <div id="tabContent">
-                <!-- Dashboard Tab -->
+                <!-- Dashboard Tab with Live Chart -->
                 <div id="dashboard-tab" class="tab-pane">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">ECE Price</p><p id="ecePrice" class="text-xl font-bold text-amber-400">--</p></div>
@@ -198,12 +212,14 @@
                         <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">24h Volume</p><p id="volume" class="text-xl font-bold">--</p></div>
                         <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">Liquidity</p><p id="liquidity" class="text-xl font-bold">--</p></div>
                     </div>
-                    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2">Live Price Chart</h3>
-                        <iframe src="https://dexscreener.com/bsc/0x9f8c29e496ecb6c39c221458f211234dfcb233e0?embed=1" width="100%" height="400" style="border: none; border-radius: 1rem;"></iframe>
+                    <!-- TradingView Chart -->
+                    <div class="glass-card p-5">
+                        <h3 class="text-xl font-bold mb-2">Live Price Chart (TradingView)</h3>
+                        <div class="chart-container" id="tradingview-widget"></div>
                     </div>
                 </div>
 
-                <!-- Staking Tab -->
+                <!-- Staking Tab (simplified but functional) -->
                 <div id="staking-tab" class="tab-pane hidden">
                     <div class="glass-card p-5">
                         <h2 class="text-2xl font-bold mb-4">🔒 Staking Pool</h2>
@@ -427,6 +443,7 @@
         const dashboardScreen = document.getElementById('dashboardScreen');
         const createWalletBtn = document.getElementById('createWalletBtn');
         const importWalletBtn = document.getElementById('importWalletBtn');
+        const loginBtn = document.getElementById('loginBtn');
         const importSection = document.getElementById('importSection');
         const importMnemonic = document.getElementById('importMnemonic');
         const doImportBtn = document.getElementById('doImportBtn');
@@ -457,6 +474,9 @@
         const sendToken = document.getElementById('sendToken');
         const sendBtn = document.getElementById('sendBtn');
         const sendStatus = document.getElementById('sendStatus');
+        const referralSection = document.getElementById('referralSection');
+        const referralLinkSpan = document.getElementById('referralLink');
+        const copyReferralBtn = document.getElementById('copyReferralBtn');
 
         // Helper functions
         function hashPassword(pwd) { return btoa(pwd); }
@@ -478,6 +498,11 @@
             depositAddressSpan.innerText = currentWallet.address;
             if (qrcode) qrcode.clear(); else qrcode = new QRCode(document.getElementById("qrcode"), { text: currentWallet.address, width: 128, height: 128 });
             qrcode.makeCode(currentWallet.address);
+            // Set referral link
+            const refCode = btoa(currentWallet.address).substring(0, 16);
+            const refLink = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
+            referralLinkSpan.innerText = refLink;
+            referralSection.classList.remove('hidden');
         }
 
         async function updateBalances() {
@@ -596,12 +621,22 @@
             } catch (err) { walletError.innerText = err.message; }
         });
 
+        // Login button – directly show password unlock
+        loginBtn.addEventListener('click', () => {
+            if (localStorage.getItem('eceWalletSeed')) {
+                showPasswordUnlock();
+            } else {
+                walletError.innerText = "No existing wallet found. Please create or import one first.";
+            }
+        });
+
         logoutBtn.addEventListener('click', () => {
             currentWallet = null;
             provider = null;
             contract = null;
             dashboardScreen.classList.add('hidden');
-            showPasswordUnlock();
+            setupScreen.classList.remove('hidden');
+            referralSection.classList.add('hidden');
         });
 
         recoverBtn.addEventListener('click', async () => {
@@ -686,6 +721,13 @@
         networkSelect.addEventListener('change', async () => { if (currentWallet) await initWalletFromSeed(localStorage.getItem('eceWalletSeed')); });
         refreshBtn.addEventListener('click', updateBalances);
 
+        // Copy referral link
+        copyReferralBtn.addEventListener('click', () => {
+            const link = referralLinkSpan.innerText;
+            navigator.clipboard.writeText(link);
+            alert('Referral link copied!');
+        });
+
         // Tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -699,7 +741,7 @@
         });
         document.querySelector('.tab-btn').classList.add('tab-active');
 
-        // Chat functions (using Supabase)
+        // Chat functions
         const SUPABASE_URL = "https://nydgqfyqtfsnlctjzuot.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable__38Z2U4m6dwIAP0ezH9AyQ_F4iLxe7-";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -759,6 +801,29 @@
         setInterval(fetchPrice, 30000);
         fetchTokenInfo();
 
+        // TradingView widget
+        function loadTradingView() {
+            if (typeof TradingView !== 'undefined') {
+                new TradingView.widget({
+                    "width": "100%",
+                    "height": "100%",
+                    "symbol": "BINANCE:BNBUSDT",
+                    "interval": "D",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "en",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_top_toolbar": true,
+                    "hide_legend": true,
+                    "save_image": false,
+                    "container_id": "tradingview-widget"
+                });
+            }
+        }
+        setTimeout(loadTradingView, 1000);
+
         // Settings
         document.getElementById('changePasswordBtn')?.addEventListener('click', async () => {
             const oldPwd = document.getElementById('oldPassword').value;
@@ -783,8 +848,14 @@
         // Initial load
         window.addEventListener('load', async () => {
             const hasWallet = localStorage.getItem('eceWalletSeed');
-            if (hasWallet) showPasswordUnlock();
-            else setupScreen.classList.remove('hidden');
+            if (hasWallet) {
+                // Do not auto‑unlock; show login button only
+                setupScreen.classList.remove('hidden');
+                dashboardScreen.classList.add('hidden');
+            } else {
+                setupScreen.classList.remove('hidden');
+                dashboardScreen.classList.add('hidden');
+            }
         });
     </script>
 </body>
