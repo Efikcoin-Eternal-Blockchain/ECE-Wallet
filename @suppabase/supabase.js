@@ -1,4 +1,2 @@
-import { createClient } from '@supabase/supabase-js'
-const supabaseUrl = 'https://uyqielrynfknnkakwthi.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+NEXT_PUBLIC_SUPABASE_URL=https://nydgqfyqtfsnlctjzuot.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable__38Z2U4m6dwIAP0ezH9AyQ_F4iLxe7-
