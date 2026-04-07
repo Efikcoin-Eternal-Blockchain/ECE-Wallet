@@ -2,634 +2,495 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>EfikCoin Eternal – Complete Wallet</title>
-    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>EfikCoin Eternal | Non-Custodial Wallet</title>
+    <!-- Tailwind CSS + Font Awesome -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Ethers v5 & Firebase v9 Modular -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        // Import Firebase modules (dynamic)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+        
+        // ======================== FIREBASE CONFIGURATION ========================
+        // !!! IMPORTANT: Replace with your own Firebase project credentials !!!
+        // Enable Google Auth & Firestore in Firebase Console.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyPlaceholderReplaceWithYourKey",  // <-- REPLACE
+            authDomain: "efikcoin-wallet.firebaseapp.com",       // <-- REPLACE
+            projectId: "efikcoin-wallet",                        // <-- REPLACE
+            storageBucket: "efikcoin-wallet.appspot.com",        // <-- REPLACE
+            messagingSenderId: "123456789012",                   // <-- REPLACE
+            appId: "1:123456789012:web:abcdef123456"             // <-- REPLACE
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        
+        // ======================== TOKEN CONTRACT INFO ========================
+        const TOKEN_ADDRESS = "0x7FAbe1cc407f0e01c3cdF5Cc05744f8D98bC70B6";
+        // Full ABI as provided (ERC20 + Owner/Metadata functions)
+        const TOKEN_ABI = [{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimals","type":"uint8"},{"internalType":"uint256","name":"supply","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"feeWallet","type":"address"},{"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"name":"MetadataUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"owner","type":"address"}],"name":"TeamFinanceTokenMint","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"metadata","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"metadata_ipfs_hash","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"name":"updateMetadata","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+        
+        // BSC Mainnet
+        const BSC_RPC = "https://bsc-dataseed.binance.org/";
+        const providerBSC = new ethers.providers.JsonRpcProvider(BSC_RPC);
+        const tokenContract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, providerBSC);
+        
+        // Global state
+        let currentUser = null;           // Firebase user
+        let activeWallet = null;          // ethers.Wallet instance (decrypted)
+        let walletAddress = null;
+        let encryptedStore = null;         // cached encrypted json for current user
+        
+        // UI Elements
+        const authSection = document.getElementById("auth-section");
+        const walletDashboard = document.getElementById("wallet-dashboard");
+        const userEmailSpan = document.getElementById("user-email");
+        const walletAddressSpan = document.getElementById("wallet-address");
+        const efikBalanceSpan = document.getElementById("efik-balance");
+        const bnbBalanceSpan = document.getElementById("bnb-balance");
+        const tokenSymbolSpan = document.getElementById("token-symbol");
+        const tokenNameSpan = document.getElementById("token-name");
+        const foundationAddrSpan = document.getElementById("foundation-addr");
+        
+        // Modals
+        const storagePasswordModal = document.getElementById("storage-password-modal");
+        const setupWalletModal = document.getElementById("setup-wallet-modal");
+        const sendTokenModal = document.getElementById("send-token-modal");
+        const importWalletModal = document.getElementById("import-wallet-modal");
+        const createWalletModal = document.getElementById("create-wallet-modal");
+        const loadingOverlay = document.getElementById("loading-overlay");
+        
+        // Helper: show/hide loading
+        function setLoading(show, text = "Processing...") {
+            const loadingText = document.getElementById("loading-text");
+            if(loadingText) loadingText.innerText = text;
+            loadingOverlay.classList.toggle("hidden", !show);
+        }
+        
+        // Helper: refresh balances
+        async function refreshBalances() {
+            if(!activeWallet || !walletAddress) return;
+            try {
+                const efikBalance = await tokenContract.balanceOf(walletAddress);
+                const bnbBalance = await providerBSC.getBalance(walletAddress);
+                efikBalanceSpan.innerText = ethers.utils.formatUnits(efikBalance, 18);
+                bnbBalanceSpan.innerText = ethers.utils.formatEther(bnbBalance);
+            } catch(e) { console.error(e); }
+        }
+        
+        // Load token info
+        async function loadTokenInfo() {
+            try {
+                const symbol = await tokenContract.symbol();
+                const name = await tokenContract.name();
+                tokenSymbolSpan.innerText = symbol;
+                tokenNameSpan.innerText = name;
+                foundationAddrSpan.innerText = TOKEN_ADDRESS.slice(0,10)+"..."+TOKEN_ADDRESS.slice(-8);
+            } catch(e) {}
+        }
+        loadTokenInfo();
+        
+        // Encrypt wallet with storage password using ethers keystore
+        async function encryptWalletWithPassword(wallet, password) {
+            return await wallet.encrypt(password);
+        }
+        
+        // Decrypt wallet from encrypted json
+        async function decryptWalletWithPassword(encryptedJson, password) {
+            return await ethers.Wallet.fromEncryptedJson(encryptedJson, password);
+        }
+        
+        // Store encrypted wallet in Firestore
+        async function storeWalletForUser(userId, encryptedJson, address) {
+            await setDoc(doc(db, "wallets", userId), { encryptedWallet: encryptedJson, address: address, updatedAt: Date.now() });
+        }
+        
+        // Fetch encrypted wallet from Firestore
+        async function fetchWalletForUser(userId) {
+            const docSnap = await getDoc(doc(db, "wallets", userId));
+            if(docSnap.exists()) return docSnap.data();
+            return null;
+        }
+        
+        // Delete wallet (if user resets)
+        async function deleteWalletForUser(userId) {
+            await deleteDoc(doc(db, "wallets", userId));
+        }
+        
+        // Logout & reset
+        async function logoutUser() {
+            await signOut(auth);
+            activeWallet = null;
+            walletAddress = null;
+            encryptedStore = null;
+            walletDashboard.classList.add("hidden");
+            authSection.classList.remove("hidden");
+            document.getElementById("create-wallet-btn-header")?.classList.add("hidden");
+            document.getElementById("import-wallet-btn-header")?.classList.add("hidden");
+        }
+        
+        // Show storage password popup after Google sign in
+        async function promptStoragePasswordAndUnlock(userId, encryptedJson) {
+            return new Promise((resolve) => {
+                const modal = storagePasswordModal;
+                const input = document.getElementById("storage-password-input");
+                const errorSpan = document.getElementById("password-error");
+                const confirmBtn = document.getElementById("confirm-password-btn");
+                const cancelBtn = document.getElementById("cancel-password-btn");
+                input.value = "";
+                errorSpan.classList.add("hidden");
+                modal.classList.remove("hidden");
+                
+                const handler = async () => {
+                    const pwd = input.value;
+                    if(!pwd) { errorSpan.classList.remove("hidden"); errorSpan.innerText = "Password required"; return; }
+                    setLoading(true, "Decrypting wallet...");
+                    try {
+                        const wallet = await decryptWalletWithPassword(encryptedJson, pwd);
+                        activeWallet = wallet.connect(providerBSC);
+                        walletAddress = wallet.address;
+                        encryptedStore = encryptedJson;
+                        modal.classList.add("hidden");
+                        showDashboard();
+                        await refreshBalances();
+                        resolve(true);
+                    } catch(e) {
+                        errorSpan.classList.remove("hidden");
+                        errorSpan.innerText = "Wrong storage password!";
+                    } finally { setLoading(false); }
+                };
+                confirmBtn.onclick = handler;
+                cancelBtn.onclick = () => { modal.classList.add("hidden"); resolve(false); };
+                input.onkeypress = (e) => { if(e.key === "Enter") handler(); };
+            });
+        }
+        
+        // Show dashboard UI after wallet loaded
+        function showDashboard() {
+            if(!currentUser) return;
+            authSection.classList.add("hidden");
+            walletDashboard.classList.remove("hidden");
+            userEmailSpan.innerText = currentUser.email;
+            walletAddressSpan.innerText = walletAddress.slice(0,6)+"..."+walletAddress.slice(-4);
+            document.getElementById("full-address-btn").onclick = () => { navigator.clipboard.writeText(walletAddress); alert("Address copied!"); };
+            document.getElementById("view-bscscan").href = `https://bscscan.com/address/${walletAddress}`;
+            document.getElementById("send-token-open").onclick = () => { sendTokenModal.classList.remove("hidden"); };
+            document.getElementById("refresh-balance").onclick = () => refreshBalances();
+            refreshBalances();
+        }
+        
+        // Handle Google sign in
+        async function googleSignIn() {
+            setLoading(true, "Signing in with Google...");
+            try {
+                const result = await signInWithPopup(auth, provider);
+                currentUser = result.user;
+                const userId = currentUser.uid;
+                const walletData = await fetchWalletForUser(userId);
+                if(walletData && walletData.encryptedWallet) {
+                    // Existing user -> prompt storage password
+                    setLoading(false);
+                    await promptStoragePasswordAndUnlock(userId, walletData.encryptedWallet);
+                } else {
+                    // New user -> show setup options (create / import)
+                    setLoading(false);
+                    showSetupOptions();
+                }
+            } catch(err) { console.error(err); alert("Google sign in failed: "+err.message); setLoading(false); }
+        }
+        
+        // Show setup modal (create / import)
+        function showSetupOptions() {
+            const modal = setupWalletModal;
+            modal.classList.remove("hidden");
+            document.getElementById("setup-create-btn").onclick = () => { modal.classList.add("hidden"); showCreateWallet(); };
+            document.getElementById("setup-import-btn").onclick = () => { modal.classList.add("hidden"); showImportWallet(); };
+            document.getElementById("setup-logout").onclick = () => { modal.classList.add("hidden"); logoutUser(); };
+        }
+        
+        // CREATE WALLET flow (mnemonic)
+        let generatedMnemonic = null;
+        function showCreateWallet() {
+            const modal = createWalletModal;
+            const mnemonicDiv = document.getElementById("mnemonic-display");
+            const warningCheck = document.getElementById("backup-check");
+            const pwd1 = document.getElementById("create-pwd");
+            const pwd2 = document.getElementById("create-pwd2");
+            const errorSpan = document.getElementById("create-error");
+            const generateBtn = document.getElementById("generate-mnemonic-btn");
+            const confirmCreate = document.getElementById("confirm-create-wallet");
+            
+            mnemonicDiv.innerText = "";
+            pwd1.value = "";
+            pwd2.value = "";
+            warningCheck.checked = false;
+            errorSpan.classList.add("hidden");
+            modal.classList.remove("hidden");
+            
+            generateBtn.onclick = () => {
+                const wallet = ethers.Wallet.createRandom();
+                generatedMnemonic = wallet.mnemonic.phrase;
+                mnemonicDiv.innerText = generatedMnemonic;
+                warningCheck.checked = false;
+            };
+            confirmCreate.onclick = async () => {
+                if(!generatedMnemonic) { errorSpan.innerText = "Generate mnemonic first!"; errorSpan.classList.remove("hidden"); return; }
+                if(!warningCheck.checked) { errorSpan.innerText = "Please confirm backup of seed phrase!"; errorSpan.classList.remove("hidden"); return; }
+                const password = pwd1.value;
+                if(!password || password.length < 6) { errorSpan.innerText = "Storage password (min 6 chars)"; errorSpan.classList.remove("hidden"); return; }
+                if(password !== pwd2.value) { errorSpan.innerText = "Passwords do not match"; errorSpan.classList.remove("hidden"); return; }
+                setLoading(true, "Creating wallet...");
+                try {
+                    const wallet = ethers.Wallet.fromMnemonic(generatedMnemonic);
+                    const encrypted = await encryptWalletWithPassword(wallet, password);
+                    await storeWalletForUser(currentUser.uid, encrypted, wallet.address);
+                    activeWallet = wallet.connect(providerBSC);
+                    walletAddress = wallet.address;
+                    encryptedStore = encrypted;
+                    modal.classList.add("hidden");
+                    showDashboard();
+                    await refreshBalances();
+                    alert("Wallet created! Your seed phrase is saved securely.");
+                } catch(e) { errorSpan.innerText = "Error: "+e.message; errorSpan.classList.remove("hidden"); }
+                finally { setLoading(false); }
+            };
+            document.getElementById("close-create-modal").onclick = () => modal.classList.add("hidden");
+        }
+        
+        // IMPORT WALLET (private key or mnemonic)
+        function showImportWallet() {
+            const modal = importWalletModal;
+            const methodSelect = document.getElementById("import-method");
+            const privateKeyDiv = document.getElementById("private-key-div");
+            const mnemonicDiv = document.getElementById("mnemonic-div");
+            const privateKeyInput = document.getElementById("private-key-input");
+            const mnemonicInput = document.getElementById("mnemonic-input");
+            const importPwd = document.getElementById("import-pwd");
+            const importError = document.getElementById("import-error");
+            
+            privateKeyDiv.classList.remove("hidden");
+            mnemonicDiv.classList.add("hidden");
+            privateKeyInput.value = "";
+            mnemonicInput.value = "";
+            importPwd.value = "";
+            importError.classList.add("hidden");
+            modal.classList.remove("hidden");
+            
+            methodSelect.onchange = () => {
+                if(methodSelect.value === "privateKey") {
+                    privateKeyDiv.classList.remove("hidden");
+                    mnemonicDiv.classList.add("hidden");
+                } else {
+                    privateKeyDiv.classList.add("hidden");
+                    mnemonicDiv.classList.remove("hidden");
+                }
+            };
+            document.getElementById("confirm-import-wallet").onclick = async () => {
+                const password = importPwd.value;
+                if(!password || password.length<6) { importError.innerText = "Storage password min 6 chars"; importError.classList.remove("hidden"); return; }
+                setLoading(true, "Importing wallet...");
+                try {
+                    let wallet;
+                    if(methodSelect.value === "privateKey") {
+                        const pk = privateKeyInput.value.trim();
+                        if(!pk.startsWith("0x")) throw new Error("Invalid private key");
+                        wallet = new ethers.Wallet(pk);
+                    } else {
+                        const mnemonic = mnemonicInput.value.trim();
+                        if(!ethers.utils.isValidMnemonic(mnemonic)) throw new Error("Invalid mnemonic phrase");
+                        wallet = ethers.Wallet.fromMnemonic(mnemonic);
+                    }
+                    const encrypted = await encryptWalletWithPassword(wallet, password);
+                    await storeWalletForUser(currentUser.uid, encrypted, wallet.address);
+                    activeWallet = wallet.connect(providerBSC);
+                    walletAddress = wallet.address;
+                    encryptedStore = encrypted;
+                    modal.classList.add("hidden");
+                    showDashboard();
+                    await refreshBalances();
+                    alert("Wallet imported successfully!");
+                } catch(e) { importError.innerText = e.message; importError.classList.remove("hidden"); }
+                finally { setLoading(false); }
+            };
+            document.getElementById("close-import-modal").onclick = () => modal.classList.add("hidden");
+        }
+        
+        // Send EfikCoin tokens
+        async function sendEfikCoin() {
+            const toAddr = document.getElementById("send-to-address").value;
+            const amount = document.getElementById("send-amount").value;
+            const statusDiv = document.getElementById("send-status");
+            if(!toAddr || !amount) { statusDiv.innerText = "Fill recipient and amount"; return; }
+            if(!activeWallet) { statusDiv.innerText = "Wallet not loaded"; return; }
+            setLoading(true, "Preparing transaction...");
+            try {
+                const parsedAmount = ethers.utils.parseUnits(amount, 18);
+                const tokenWithSigner = tokenContract.connect(activeWallet);
+                const gasEstimate = await tokenWithSigner.estimateGas.transfer(toAddr, parsedAmount);
+                const tx = await tokenWithSigner.transfer(toAddr, parsedAmount, { gasLimit: gasEstimate.mul(120).div(100) });
+                statusDiv.innerText = `Tx sent: ${tx.hash.slice(0,10)}... waiting confirmation`;
+                await tx.wait();
+                statusDiv.innerText = "✅ Transfer successful!";
+                await refreshBalances();
+                setTimeout(() => { sendTokenModal.classList.add("hidden"); statusDiv.innerText = ""; }, 2000);
+            } catch(e) {
+                statusDiv.innerText = "Error: "+e.message;
+            } finally { setLoading(false); }
+        }
+        document.getElementById("send-token-submit").onclick = sendEfikCoin;
+        document.getElementById("close-send-modal").onclick = () => sendTokenModal.classList.add("hidden");
+        
+        // Admin / advanced functions (owner only) using contract owner check
+        document.getElementById("admin-actions-btn").onclick = async () => {
+            if(!activeWallet) return alert("Wallet not loaded");
+            setLoading(true, "Checking ownership...");
+            try {
+                const contractOwner = await tokenContract.owner();
+                if(contractOwner.toLowerCase() !== walletAddress.toLowerCase()) {
+                    alert("You are not the contract owner. Admin functions disabled.");
+                    setLoading(false);
+                    return;
+                }
+                const mintAddr = prompt("Mint tokens to address (0x...):");
+                if(mintAddr && ethers.utils.isAddress(mintAddr)) {
+                    const mintAmount = prompt("Amount (in EfikCoin):");
+                    if(mintAmount) {
+                        const amountWei = ethers.utils.parseUnits(mintAmount, 18);
+                        const tokenOwnerSigner = tokenContract.connect(activeWallet);
+                        const tx = await tokenOwnerSigner.mint(mintAddr, amountWei);
+                        await tx.wait();
+                        alert("Mint successful!");
+                        refreshBalances();
+                    }
+                } else alert("Invalid address");
+            } catch(e) { alert("Admin error: "+e.message); }
+            finally { setLoading(false); }
+        };
+        
+        // Reveal Seed Phrase (with storage password re-auth)
+        document.getElementById("reveal-seed-btn").onclick = async () => {
+            if(!encryptedStore) return alert("No wallet data");
+            const pwd = prompt("Enter your storage password to reveal seed phrase:");
+            if(!pwd) return;
+            setLoading(true, "Decrypting...");
+            try {
+                const wallet = await decryptWalletWithPassword(encryptedStore, pwd);
+                const mnemonic = wallet.mnemonic?.phrase;
+                if(mnemonic) alert(`Seed Phrase: ${mnemonic}\n\nStore it safely!`);
+                else alert("This wallet was imported via private key, no mnemonic available.");
+            } catch(e) { alert("Wrong password or unable to recover."); }
+            finally { setLoading(false); }
+        };
+        
+        // Logout button
+        document.getElementById("logout-btn").onclick = async () => {
+            await logoutUser();
+            alert("Logged out successfully.");
+        };
+        
+        // Handle auth state changes
+        onAuthStateChanged(auth, async (user) => {
+            if(!user) {
+                currentUser = null;
+                activeWallet = null;
+                walletDashboard.classList.add("hidden");
+                authSection.classList.remove("hidden");
+                return;
+            }
+            currentUser = user;
+            const userId = user.uid;
+            const walletData = await fetchWalletForUser(userId);
+            if(walletData && walletData.encryptedWallet) {
+                await promptStoragePasswordAndUnlock(userId, walletData.encryptedWallet);
+            } else {
+                showSetupOptions();
+            }
+        });
+        
+        // Attach Google button & UI actions
+        document.getElementById("google-login-btn").onclick = googleSignIn;
+        document.getElementById("create-new-wallet-landing").onclick = () => { if(!currentUser) googleSignIn(); else showCreateWallet(); };
+        document.getElementById("import-wallet-landing").onclick = () => { if(!currentUser) googleSignIn(); else showImportWallet(); };
+        document.getElementById("login-existing-landing").onclick = googleSignIn;
+        
+        // Prefill foundation address display
+        document.getElementById("foundation-addr").innerText = TOKEN_ADDRESS.slice(0,10)+"..."+TOKEN_ADDRESS.slice(-8);
+        document.getElementById("copy-foundation").onclick = () => { navigator.clipboard.writeText(TOKEN_ADDRESS); alert("Token contract address copied!"); };
+        
+        // close modals via x buttons
+        document.querySelectorAll(".close-modal-btn").forEach(btn => {
+            btn.onclick = (e) => {
+                const modal = btn.closest(".fixed");
+                if(modal) modal.classList.add("hidden");
+            };
+        });
+        setLoading(false);
+    </script>
     <style>
-        body { background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060b); color: #e5e5e5; font-family: 'Inter', sans-serif; }
-        .glass-card { background: rgba(20,20,20,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,215,0,0.2); border-radius: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; }
-        .glass-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-        .btn { transition: all 0.2s; cursor: pointer; font-weight: 600; display: inline-block; text-align: center; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255,215,0,0.3); }
-        .tab-active { border-bottom: 2px solid #f59e0b; color: #f59e0b; }
-        .owner-only { display: none; }
-        .hidden { display: none; }
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            border-top: 3px solid #f59e0b;
-            width: 24px;
-            height: 24px;
-            animation: spin 0.8s linear infinite;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn-loading { opacity: 0.6; pointer-events: none; }
-        .mnemonic-box { background: #1a1a1a; padding: 1rem; border-radius: 0.75rem; font-family: monospace; word-break: break-all; }
-        .loan-card { background: #1a1a1a; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #f59e0b; }
-        .verified-badge { background: #1a5c2e; color: #8bc34a; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.7rem; display: inline-block; }
-        .roadmap-item { border-left: 2px solid #f59e0b; padding-left: 1rem; margin-bottom: 1rem; }
-        .password-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .password-modal-content { background: #1a1a1a; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%; }
-        .warning-text { color: #f97316; font-size: 0.8rem; margin-top: 0.5rem; }
-        .logout-btn { background: #dc2626; }
-        .logout-btn:hover { background: #b91c1c; }
-        .lang-selector {
-            position: fixed; top: 1rem; right: 1rem; z-index: 100;
-            background: rgba(0,0,0,0.7); padding: 0.5rem; border-radius: 2rem;
-            backdrop-filter: blur(8px); border: 1px solid #f59e0b;
-        }
-        .lang-selector select { background: transparent; color: white; border: none; font-weight: bold; cursor: pointer; }
-        .chat-message { padding: 0.5rem; border-radius: 0.5rem; margin-bottom: 0.5rem; }
-        .chat-user { background: #1e293b; }
-        .chat-admin { background: #2d3748; border-left: 3px solid #f59e0b; }
-        .tx-status { font-size: 0.8rem; margin-top: 0.5rem; padding: 0.25rem; border-radius: 0.5rem; }
-        .tx-success { background: #064e3b; color: #4ade80; }
-        .tx-error { background: #7f1d1d; color: #f87171; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: radial-gradient(circle at 10% 30%, #0a0f1e, #03060f); }
+        .glass-card { background: rgba(15, 25, 45, 0.65); backdrop-filter: blur(14px); border: 1px solid rgba(0, 255, 255, 0.2); border-radius: 2rem; }
+        .btn-primary { background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%); transition: all 0.2s; }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 10px 20px -5px #005bea80; }
     </style>
 </head>
-<body class="p-4 md:p-6 min-h-screen flex items-center justify-center">
-    <div class="lang-selector">
-        <select id="languageSelect">
-            <option value="en">🇬🇧 English</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="de">🇩🇪 Deutsch</option>
-            <option value="it">🇮🇹 Italiano</option>
-            <option value="pt">🇵🇹 Português</option>
-            <option value="nl">🇳🇱 Nederlands</option>
-            <option value="ru">🇷🇺 Русский</option>
-            <option value="zh">🇨🇳 中文</option>
-            <option value="ja">🇯🇵 日本語</option>
-            <option value="ar">🇸🇦 العربية</option>
-            <option value="hi">🇮🇳 हिन्दी</option>
-        </select>
+<body class="text-white">
+    <div id="loading-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 p-6 rounded-2xl flex flex-col items-center"><i class="fas fa-spinner fa-spin text-4xl text-cyan-400"></i><p id="loading-text" class="mt-3">Loading...</p></div>
     </div>
-
-    <div class="max-w-6xl w-full" id="app">
-        <!-- Wallet Setup Screen -->
-        <div id="setupScreen" class="glass-card p-8 max-w-lg mx-auto">
-            <div class="text-center mb-6">
-                <img src="https://raw.githubusercontent.com/Efikcoinofficialecosystem/efikcoin-eternal/main/1772019882787.png" alt="ECE Logo" class="w-20 h-20 mx-auto rounded-full">
-                <h1 class="text-3xl font-bold text-amber-400 mt-4">EfikCoin Eternal</h1>
-                <p class="text-gray-400">Official Wallet · Non‑custodial</p>
-                <div class="mt-2"><span class="verified-badge">✓ Contract Verified on BscScan</span></div>
+    
+    <!-- AUTH SECTION (Landing) -->
+    <div id="auth-section" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-8 text-center">
+            <div class="flex justify-center mb-4"><i class="fas fa-infinity text-5xl text-cyan-400"></i></div>
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-500 bg-clip-text text-transparent">EfikCoin Eternal</h1>
+            <p class="text-gray-300 mb-2">Official Wallet · Non-custodial</p>
+            <p class="text-xs text-green-400 mb-6"><i class="fas fa-check-circle"></i> Contract Verified on BscScan</p>
+            <div class="space-y-3">
+                <button id="google-login-btn" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl flex items-center justify-center gap-3 transition"><i class="fab fa-google text-xl"></i> Login with Google</button>
+                <button id="create-new-wallet-landing" class="w-full btn-primary py-3 rounded-xl font-semibold">✨ Create New Wallet</button>
+                <button id="import-wallet-landing" class="w-full border border-cyan-500/50 hover:bg-cyan-500/20 py-3 rounded-xl">📂 Import Existing Wallet</button>
+                <button id="login-existing-landing" class="w-full text-cyan-300 underline text-sm">🔐 Login (Existing User)</button>
             </div>
-            <div class="space-y-4">
-                <button id="createWalletBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-6 rounded-lg w-full">Create New Wallet</button>
-                <button id="importWalletBtn" class="btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg w-full">Import Existing Wallet</button>
-                <div id="importSection" class="hidden mt-4">
-                    <textarea id="importMnemonic" rows="2" placeholder="Enter 12-word seed phrase or private key (0x...)" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white"></textarea>
-                    <button id="doImportBtn" class="btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg mt-2 w-full">Import</button>
-                </div>
-                <div id="newMnemonicDisplay" class="mnemonic-box hidden">
-                    <p class="text-amber-400 mb-2">Your 12-word recovery phrase (save it safely):</p>
-                    <p id="mnemonicWords" class="text-sm break-all"></p>
-                    <div class="warning-text mt-2">⚠️ Never share this phrase. Anyone with it can steal your funds. Write it down and store offline.</div>
-                    <button id="confirmSeedBtn" class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg mt-3 w-full">I have saved it, continue</button>
-                </div>
-                <div id="walletError" class="text-red-400 text-sm text-center"></div>
-            </div>
+            <div class="mt-8 text-xs text-gray-400">Powered by Binance Smart Chain | Non-custodial & Encrypted</div>
         </div>
-
-        <!-- Password Setup / Unlock Screen -->
-        <div id="passwordScreen" class="hidden password-modal">
-            <div class="password-modal-content">
-                <h2 id="passwordTitle" class="text-xl font-bold text-amber-400 mb-4">Set Password</h2>
-                <input type="password" id="passwordInput" placeholder="Enter password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white mb-3">
-                <input type="password" id="passwordConfirm" placeholder="Confirm password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white mb-3 hidden">
-                <div id="passwordMessage" class="text-sm text-center mb-3"></div>
-                <div class="flex gap-3">
-                    <button id="passwordSubmitBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg flex-1">Submit</button>
-                    <button id="forgotPasswordBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg hidden">Forgot Password?</button>
-                </div>
+    </div>
+    
+    <!-- DASHBOARD (after wallet loaded) -->
+    <div id="wallet-dashboard" class="hidden min-h-screen p-4 md:p-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
+                <div class="flex items-center gap-2"><i class="fas fa-infinity text-3xl text-cyan-400"></i><span class="font-bold text-xl">EfikCoin Eternal</span><span class="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full">Non-custodial</span></div>
+                <div class="flex gap-3"><button id="logout-btn" class="bg-red-500/20 hover:bg-red-500/40 px-4 py-2 rounded-xl text-sm"><i class="fas fa-sign-out-alt"></i> Exit</button></div>
             </div>
-        </div>
-
-        <!-- Forgot Password Modal -->
-        <div id="forgotModal" class="hidden password-modal">
-            <div class="password-modal-content">
-                <h2 class="text-xl font-bold text-amber-400 mb-4">Recover Wallet</h2>
-                <p class="text-sm text-gray-400 mb-2">Enter your 12-word seed phrase to reset password.</p>
-                <textarea id="recoverySeed" rows="3" placeholder="Enter seed phrase" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white mb-3"></textarea>
-                <button id="recoverBtn" class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">Recover & Reset Password</button>
-                <button id="cancelRecoverBtn" class="btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg w-full mt-2">Cancel</button>
-                <div id="recoveryMessage" class="text-sm text-center mt-2"></div>
-            </div>
-        </div>
-
-        <!-- Main Dashboard -->
-        <div id="dashboardScreen" class="hidden space-y-6">
-            <div class="text-center">
-                <img src="https://raw.githubusercontent.com/Efikcoinofficialecosystem/efikcoin-eternal/main/1772019882787.png" alt="ECE Logo" class="w-16 h-16 mx-auto rounded-full">
-                <h1 class="text-4xl font-extrabold bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 bg-clip-text text-transparent">EfikCoin Eternal</h1>
-                <p class="text-gray-400 mt-2">Decentralized · Self‑custody</p>
-                <div class="mt-1"><span class="verified-badge">✓ Verified Contract | 0x9F8C29...233E0</span></div>
-            </div>
-
-            <!-- Wallet Info + Network + Logout -->
-            <div class="glass-card p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div><p class="text-gray-400 text-sm">Your Address</p><p id="userAddress" class="font-mono text-sm break-all bg-black/30 p-2 rounded-lg"></p></div>
-                    <div class="text-right"><p class="text-gray-400 text-sm">ECE Balance</p><p id="eceBalance" class="text-2xl font-bold text-amber-400">0</p></div>
-                    <div class="text-right"><p class="text-gray-400 text-sm">Native Balance</p><p id="nativeBalance" class="text-2xl font-bold text-amber-400">0</p></div>
-                    <div><label class="text-sm text-gray-400">Network</label><select id="networkSelect" class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"><option value="56">BNB Smart Chain (BSC)</option><option value="1">Ethereum Mainnet</option><option value="137">Polygon</option></select></div>
-                    <button id="refreshBtn" class="btn bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-full text-sm">🔄 Refresh</button>
-                    <button id="logoutBtn" class="btn logout-btn hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm">🚪 Logout</button>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 glass-card p-6">
+                    <div class="flex justify-between items-start"><div><p class="text-gray-400 text-sm">Welcome back,</p><p id="user-email" class="font-mono truncate"></p><div class="flex items-center gap-2 mt-2"><span class="bg-black/40 px-3 py-1 rounded-full text-sm font-mono" id="wallet-address"></span><button id="full-address-btn" class="text-cyan-400 text-xs"><i class="far fa-copy"></i></button><a id="view-bscscan" target="_blank" class="text-cyan-400 text-xs"><i class="fas fa-external-link-alt"></i></a></div></div><i class="fas fa-shield-alt text-3xl text-cyan-300/50"></i></div>
+                    <div class="mt-6 grid grid-cols-2 gap-4"><div class="bg-black/30 p-4 rounded-2xl"><p class="text-gray-400 text-xs">EFIK BALANCE</p><p id="efik-balance" class="text-3xl font-bold">0.00</p><p id="token-symbol" class="text-xs text-cyan-300">EFIK</p></div><div class="bg-black/30 p-4 rounded-2xl"><p class="text-gray-400 text-xs">BNB (GAS)</p><p id="bnb-balance" class="text-3xl font-bold">0.00</p><p class="text-xs text-gray-400">BNB</p></div></div>
+                    <div class="flex flex-wrap gap-3 mt-6"><button id="send-token-open" class="btn-primary px-6 py-2 rounded-xl"><i class="fas fa-paper-plane"></i> Send EFIK</button><button id="refresh-balance" class="bg-gray-700/50 px-6 py-2 rounded-xl"><i class="fas fa-sync-alt"></i> Refresh</button><button id="reveal-seed-btn" class="bg-yellow-600/30 px-4 py-2 rounded-xl text-sm"><i class="fas fa-key"></i> Reveal Seed</button><button id="admin-actions-btn" class="bg-purple-600/30 px-4 py-2 rounded-xl text-sm"><i class="fas fa-crown"></i> Admin Mint</button></div>
                 </div>
-            </div>
-
-            <!-- Deposit / Withdraw Section -->
-            <div class="glass-card p-4">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div><h3 class="text-lg font-bold text-amber-400 mb-2">📥 Deposit</h3><p class="text-sm text-gray-400 mb-2">Send any BEP‑20 token or BNB to this address:</p><p id="depositAddress" class="font-mono text-xs break-all bg-black/30 p-2 rounded-lg"></p><div id="qrcode" class="mt-3 flex justify-center"></div></div>
-                    <div><h3 class="text-lg font-bold text-amber-400 mb-2">📤 Withdraw / Send</h3><p class="text-sm text-gray-400 mb-2">Send ECE or native coin to another address.</p><input type="text" id="sendTo" placeholder="Recipient address" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white mb-2"><div class="flex gap-2"><input type="number" id="sendAmount" placeholder="Amount" class="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"><select id="sendToken" class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"><option value="ece">ECE</option><option value="native">Native (BNB/ETH/MATIC)</option></select></div><button id="sendBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg mt-3 w-full">Send</button><div id="sendStatus" class="tx-status hidden"></div></div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-lg"><i class="fas fa-donate text-cyan-400"></i> Foundation</h3>
+                    <p class="text-xs text-gray-300 mt-1">Token Contract (EfikCoin)</p>
+                    <div class="flex items-center gap-2 bg-black/30 p-2 rounded-lg mt-2"><span id="foundation-addr" class="text-xs font-mono truncate"></span><button id="copy-foundation" class="text-cyan-400 text-xs"><i class="far fa-copy"></i></button></div>
+                    <hr class="my-4 border-white/10"><p class="text-sm"><i class="fas fa-check-circle text-green-400"></i> Contract Verified</p><p id="token-name" class="text-xs text-gray-300"></p><a href="https://bscscan.com/token/0x7FAbe1cc407f0e01c3cdF5Cc05744f8D98bC70B6" target="_blank" class="text-cyan-300 text-xs flex items-center gap-1 mt-2"><i class="fab fa-bscscan"></i> View on BscScan</a>
                 </div>
-            </div>
-
-            <!-- Admin Panel (owner only) -->
-            <div id="adminPanel" class="glass-card p-5 border-2 border-amber-500/50 hidden">
-                <h2 class="text-2xl font-bold text-amber-400 mb-4">👑 Founder's Admin</h2>
-                <div class="grid md:grid-cols-4 gap-3">
-                    <button id="adminMint" class="btn bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg">🔨 Mint</button>
-                    <button id="adminSetPair" class="btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg">🔗 Set Pair</button>
-                    <button id="adminWithdrawFees" class="btn bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg">💰 Withdraw Fees</button>
-                    <button id="adminBroadcast" class="btn bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg">📢 Broadcast</button>
-                </div>
-                <div class="mt-4"><textarea id="broadcastMessage" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white" placeholder="Announcement..."></textarea></div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="flex flex-wrap justify-center gap-2 border-b border-gray-700 pb-2">
-                <button class="tab-btn" data-tab="dashboard">📊 Dashboard</button>
-                <button class="tab-btn" data-tab="staking">🔒 Staking</button>
-                <button class="tab-btn" data-tab="airdrop">🪂 Airdrop</button>
-                <button class="tab-btn" data-tab="transactions">📋 Transactions</button>
-                <button class="tab-btn" data-tab="contract">📜 Contract</button>
-                <button class="tab-btn" data-tab="loans">💸 Loans</button>
-                <button class="tab-btn" data-tab="swap">🔄 Buy/Sell</button>
-                <button class="tab-btn" data-tab="roadmap">🗺️ Roadmap</button>
-                <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
-                <button class="tab-btn" data-tab="chat">💬 Support</button>
-            </div>
-
-            <div id="tabContent">
-                <!-- Dashboard Tab -->
-                <div id="dashboard-tab" class="tab-pane">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">ECE Price</p><p id="ecePrice" class="text-xl font-bold text-amber-400">--</p></div>
-                        <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">Market Cap</p><p id="marketCap" class="text-xl font-bold">--</p></div>
-                        <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">24h Volume</p><p id="volume" class="text-xl font-bold">--</p></div>
-                        <div class="glass-card p-4 text-center"><p class="text-gray-400 text-sm">Liquidity</p><p id="liquidity" class="text-xl font-bold">--</p></div>
-                    </div>
-                    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2">Live Price Chart</h3><iframe src="https://dexscreener.com/bsc/0x9f8c29e496ecb6c39c221458f211234dfcb233e0?embed=1" width="100%" height="400" style="border: none; border-radius: 1rem;"></iframe></div>
-                </div>
-
-                <!-- Staking Tab -->
-                <div id="staking-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">🔒 Staking Pool</h2>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div><p class="text-gray-400">Your Staked: <span id="userStaked" class="text-white font-bold">0 ECE</span></p><p class="text-gray-400">Total Staked: <span id="totalStaked" class="text-white font-bold">0 ECE</span></p><p class="text-gray-400">APR: <span class="text-amber-400">125% – 750%</span></p></div>
-                            <div><select id="lockPeriod" class="bg-gray-800 border border-gray-600 rounded px-3 py-2 w-full mb-2"><option value="30">30 days – 125% APR</option><option value="60">60 days – 180% APR</option><option value="90">90 days – 250% APR</option><option value="180">180 days – 400% APR</option><option value="365">365 days – 750% APR</option></select><input type="number" id="stakeAmount" placeholder="Amount in ECE" class="bg-gray-800 border border-gray-600 rounded px-3 py-2 w-full mb-2"><div class="flex gap-2"><button id="stakeBtn" class="btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex-1">Stake</button><button id="unstakeBtn" class="btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex-1">Unstake</button><button id="claimRewardsBtn" class="btn bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex-1">Claim</button></div><div id="stakingMessage" class="text-sm mt-2"></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Airdrop Tab (owner only) -->
-                <div id="airdrop-tab" class="tab-pane hidden owner-only">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">🪂 Airdrop Manager</h2>
-                        <textarea id="airdropList" rows="5" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white font-mono" placeholder="0x123...,1000&#10;0x456...,2000"></textarea>
-                        <div class="flex gap-3 mt-4"><button id="airdropBtn" class="btn bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">Send Airdrop</button><label class="btn bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg cursor-pointer">📁 Upload CSV<input type="file" id="airdropFile" accept=".csv" class="hidden"></label></div>
-                        <div id="airdropMessage" class="text-sm mt-2"></div>
-                    </div>
-                </div>
-
-                <!-- Transactions Tab -->
-                <div id="transactions-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">📋 Recent Transactions</h2>
-                        <input type="text" id="txSearch" placeholder="Filter by address" class="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 w-full mb-3">
-                        <div id="txList" class="space-y-2 max-h-96 overflow-y-auto"></div>
-                        <div id="txMessage" class="text-sm mt-2"></div>
-                    </div>
-                </div>
-
-                <!-- Contract Tab -->
-                <div id="contract-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">📜 Contract Interaction</h2>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div><h3 class="font-semibold">Read Functions</h3><button class="btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded mt-2 text-sm w-full" onclick="callRead('name')">name()</button><button class="btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded mt-2 text-sm w-full" onclick="callRead('symbol')">symbol()</button><button class="btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded mt-2 text-sm w-full" onclick="callRead('totalSupply')">totalSupply()</button><button class="btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded mt-2 text-sm w-full" onclick="callRead('decimals')">decimals()</button><button class="btn bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded mt-2 text-sm w-full" onclick="callRead('owner')">owner()</button></div>
-                            <div><h3 class="font-semibold">Write Functions</h3><button id="writeTransfer" class="btn bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded mt-2 text-sm w-full">transfer()</button><button id="writeApprove" class="btn bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded mt-2 text-sm w-full">approve()</button></div>
-                        </div>
-                        <div id="contractMessage" class="text-sm mt-2"></div>
-                    </div>
-                </div>
-
-                <!-- Loans Tab -->
-                <div id="loans-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">💸 Loan Requests</h2>
-                        <div class="bg-gray-800 p-4 rounded-xl mb-6"><h3 class="text-xl font-semibold text-amber-400 mb-3">Apply for a Loan</h3><p class="text-sm text-gray-400 mb-3">Request crypto assets. Admin will review and approve.</p><div class="grid md:grid-cols-2 gap-3 mb-3"><div><label class="block text-sm text-gray-400 mb-1">Coin Type</label><select id="loanCoin" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"><option value="ECE">ECE (EfikCoin)</option><option value="BNB">BNB (Binance Coin)</option><option value="USDT">USDT (Tether)</option><option value="BTC">BTC (Bitcoin)</option><option value="ETH">ETH (Ethereum)</option></select></div><div><label class="block text-sm text-gray-400 mb-1">Amount</label><input type="number" id="loanAmount" placeholder="Amount" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"></div></div><textarea id="loanReason" rows="2" placeholder="Reason for loan" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 mb-3 text-white"></textarea><label class="block text-sm text-gray-400 mb-2">Upload Document (optional)</label><input type="file" id="loanDoc" accept=".pdf,.doc,.docx,.txt" class="mb-3 text-gray-400"><button id="applyLoanBtn" class="btn bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg w-full">Submit Application</button><div id="loanMessage" class="text-sm mt-2"></div></div>
-                        <div class="mb-6"><h3 class="text-xl font-semibold text-amber-400 mb-3">Your Loan History</h3><div id="userLoansList" class="space-y-2 max-h-60 overflow-y-auto"></div></div>
-                        <div id="adminLoansSection" class="hidden"><h3 class="text-xl font-semibold text-amber-400 mb-3">📋 Pending Loan Approvals (Admin)</h3><div id="pendingLoansList" class="space-y-2 max-h-96 overflow-y-auto"></div></div>
-                    </div>
-                </div>
-
-                <!-- Buy/Sell Tab -->
-                <div id="swap-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold mb-4">🔄 Buy / Sell ECE</h2>
-                        <p class="text-gray-400 mb-4">Swap directly on PancakeSwap or use the embedded widget below.</p>
-                        <div class="grid md:grid-cols-2 gap-4 mb-6"><a href="https://pancakeswap.finance/swap?outputCurrency=0x9F8C29E496ECB6C39c221458f211234DfCB233E0" target="_blank" class="btn bg-green-600 hover:bg-green-700 text-white text-center py-3 rounded-lg">Buy ECE with BNB</a><a href="https://pancakeswap.finance/swap?inputCurrency=0x9F8C29E496ECB6C39c221458f211234DfCB233E0" target="_blank" class="btn bg-red-600 hover:bg-red-700 text-white text-center py-3 rounded-lg">Sell ECE for BNB</a></div>
-                        <div><h3 class="text-xl font-semibold text-amber-400 mb-3">Swap Widget (PancakeSwap)</h3><iframe src="https://pancakeswap.finance/swap?outputCurrency=0x9F8C29E496ECB6C39c221458f211234DfCB233E0" width="100%" height="500" style="border: none; border-radius: 1rem;"></iframe></div>
-                    </div>
-                </div>
-
-                <!-- Roadmap Tab -->
-                <div id="roadmap-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold text-amber-400 mb-4">🗺️ EfikCoin Eternal Roadmap</h2>
-                        <div class="space-y-4"><div class="roadmap-item"><p class="text-amber-400 font-bold">✅ Phase 1 – Foundation (Completed)</p><p>Contract deployment, website, staking, airdrop, basic wallet.</p></div><div class="roadmap-item"><p class="text-amber-400 font-bold">🔄 Phase 2 – Growth (In Progress)</p><p>CoinGecko/CMC listings, multi‑network wallet, mobile PWA, community building.</p></div><div class="roadmap-item"><p class="text-amber-400 font-bold">📅 Phase 3 – Ecosystem (Planned Q3 2026)</p><p>DAO governance, cross‑chain bridge, lending protocol, ECE card.</p></div><div class="roadmap-item"><p class="text-amber-400 font-bold">🌍 Phase 4 – Legacy (2027+)</p><p>Decentralized exchange, humanitarian grants, educational initiatives.</p></div></div>
-                    </div>
-                </div>
-
-                <!-- Settings Tab -->
-                <div id="settings-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold text-amber-400 mb-4">⚙️ Wallet Settings</h2>
-                        <div class="space-y-4"><div><h3 class="text-lg font-semibold">Change Password</h3><input type="password" id="oldPassword" placeholder="Current password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white mt-1"><input type="password" id="newPassword" placeholder="New password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white mt-2"><input type="password" id="confirmNewPassword" placeholder="Confirm new password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white mt-2"><button id="changePasswordBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg mt-3">Change Password</button><div id="passwordChangeMsg" class="text-sm mt-2"></div></div><div class="border-t border-gray-700 pt-4"><h3 class="text-lg font-semibold">View Seed Phrase</h3><p class="text-sm text-gray-400 mb-2">Enter your password to reveal your 12-word recovery phrase.</p><input type="password" id="revealSeedPassword" placeholder="Your password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"><button id="revealSeedBtn" class="btn bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg mt-2">Reveal Seed Phrase</button><div id="seedDisplay" class="mt-3 p-3 bg-gray-900 rounded-lg font-mono text-sm break-all hidden"></div></div><div class="border-t border-gray-700 pt-4"><h3 class="text-lg font-semibold text-red-400">⚠️ Security Warnings</h3><ul class="list-disc list-inside text-sm text-gray-300 space-y-1"><li>Never share your seed phrase with anyone.</li><li>Store your seed phrase offline (paper, hardware wallet).</li><li>This wallet is non‑custodial – you are responsible for your funds.</li><li>If you lose your password but have your seed phrase, you can recover using "Forgot Password".</li><li>If you lose both password and seed phrase, your funds are lost forever.</li></ul></div></div>
-                    </div>
-                </div>
-
-                <!-- Chat Tab -->
-                <div id="chat-tab" class="tab-pane hidden">
-                    <div class="glass-card p-5">
-                        <h2 class="text-2xl font-bold text-amber-400 mb-4">💬 Support Chat</h2>
-                        <div id="chatMessages" class="space-y-2 max-h-96 overflow-y-auto mb-4 p-2 bg-black/30 rounded-lg"></div>
-                        <div class="flex gap-2"><input type="text" id="chatInput" placeholder="Type your message..." class="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white"><button id="sendChatBtn" class="btn bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg">Send</button></div>
-                        <p class="text-xs text-gray-500 mt-2">Messages are seen by the admin. You will receive replies here.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="text-center text-gray-500 text-sm pt-4 border-t border-gray-800">
-                <div class="flex justify-center space-x-6 mb-4">
-                    <a href="https://discord.gg/Ub4vvudcV" target="_blank" class="text-2xl text-gray-400 hover:text-amber-400"><i class="fab fa-discord"></i></a>
-                    <a href="https://t.me/efikcoinofficialecosystem" target="_blank" class="text-2xl text-gray-400 hover:text-amber-400"><i class="fab fa-telegram"></i></a>
-                    <a href="mailto:efikcoinofficialecosystem@gmail.com" class="text-2xl text-gray-400 hover:text-amber-400"><i class="fas fa-envelope"></i></a>
-                </div>
-                © 2026 EfikCoin Eternal · Live on BSC · Built with ❤️ for humanity
             </div>
         </div>
     </div>
-
-    <script src="https://kit.fontawesome.com/42095e8821.js" crossorigin="anonymous"></script>
-    <script>
-        // ========== CREDENTIALS (YOURS) ==========
-        const SUPABASE_URL = "https://nydgqfyqtfsnlctjzuot.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55ZGdxZnlxdGZzbmxjdGp6dW90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDU1MDksImV4cCI6MjA5MDc4MTUwOX0.Qcf9nBJ6LRQb9RBpIVXq-1S8n6mh0Jgv8_Ev8oMq8rY";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        const CONTRACT_ADDRESS = "0x9F8C29E496ECB6C39c221458f211234DfCB233E0";
-        const OWNER_ADDRESS = "0xc5ad5cfcf81ad63a94227334b898eafce6b27cca".toLowerCase();
-        const ALCHEMY_BSC_URL = "https://bnb-mainnet.g.alchemy.com/v2/Wa-XhkHpL4wE3RiUqbSDo";
-        const RPC_URLS = { 56: ALCHEMY_BSC_URL, 1: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", 137: "https://polygon-rpc.com" };
-        const NATIVE_SYMBOLS = { 56: "BNB", 1: "ETH", 137: "MATIC" };
-        const ABI = [
-            "function name() view returns (string)", "function symbol() view returns (string)", "function decimals() view returns (uint8)",
-            "function totalSupply() view returns (uint256)", "function balanceOf(address) view returns (uint256)",
-            "function transfer(address to, uint256 amount) returns (bool)", "function approve(address spender, uint256 amount) returns (bool)",
-            "function allowance(address owner, address spender) view returns (uint256)", "function owner() view returns (address)",
-            "function mint(address to, uint256 amount) external", "function airdrop(address[] calldata recipients, uint256[] calldata amounts) external",
-            "function setPairAddress(address _pair) external", "function withdrawFees() external",
-            "function stake(uint256 amount, uint256 lockPeriod) external", "function unstake(uint256 amount) external", "function claimRewards() external",
-            "function stakedBalance(address) view returns (uint256)", "function totalStaked() view returns (uint256)"
-        ];
-
-        let currentWallet = null, provider = null, contract = null, isOwner = false, loans = [], qrcode = null, chatSubscription = null;
-
-        function hashPassword(pwd) { return btoa(pwd); }
-        function verifyPassword(pwd) { return hashPassword(pwd) === localStorage.getItem('eceWalletPasswordHash'); }
-
-        async function initWalletFromSeed(seed) {
-            localStorage.setItem('eceWalletSeed', seed);
-            const chainId = parseInt(networkSelect.value);
-            provider = new ethers.providers.JsonRpcProvider(RPC_URLS[chainId]);
-            const wallet = ethers.Wallet.fromMnemonic(seed);
-            currentWallet = wallet.connect(provider);
-            if (chainId === 56) contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, currentWallet);
-            else contract = null;
-            await updateBalances();
-            await checkOwner();
-            if (depositAddressSpan) depositAddressSpan.innerText = currentWallet.address;
-            if (qrcode) qrcode.clear(); else qrcode = new QRCode(document.getElementById("qrcode"), { text: currentWallet.address, width: 128, height: 128 });
-            qrcode.makeCode(currentWallet.address);
-        }
-
-        async function updateBalances() {
-            if (!currentWallet) return;
-            try {
-                userAddressSpan.innerText = currentWallet.address;
-                const nativeBal = await provider.getBalance(currentWallet.address);
-                const symbol = NATIVE_SYMBOLS[parseInt(networkSelect.value)];
-                nativeBalanceSpan.innerText = ethers.utils.formatEther(nativeBal) + ' ' + symbol;
-                if (contract && parseInt(networkSelect.value) === 56) {
-                    const decimals = await contract.decimals();
-                    const balance = await contract.balanceOf(currentWallet.address);
-                    eceBalanceSpan.innerText = ethers.utils.formatUnits(balance, decimals) + ' ECE';
-                    try {
-                        const staked = await contract.stakedBalance(currentWallet.address);
-                        document.getElementById('userStaked').innerText = ethers.utils.formatUnits(staked, decimals) + ' ECE';
-                        const totalStaked = await contract.totalStaked();
-                        document.getElementById('totalStaked').innerText = ethers.utils.formatUnits(totalStaked, decimals) + ' ECE';
-                    } catch(e) {}
-                } else {
-                    eceBalanceSpan.innerText = '0 ECE';
-                }
-            } catch(err) { console.error(err); }
-        }
-
-        async function checkOwner() {
-            if (!contract || !currentWallet) return;
-            try {
-                const owner = await contract.owner();
-                isOwner = (currentWallet.address.toLowerCase() === owner.toLowerCase());
-                if (isOwner) {
-                    adminPanel.classList.remove('hidden');
-                    document.querySelectorAll('.owner-only').forEach(el => el.classList.remove('hidden'));
-                } else {
-                    adminPanel.classList.add('hidden');
-                    document.querySelectorAll('.owner-only').forEach(el => el.classList.add('hidden'));
-                }
-            } catch(e) {}
-        }
-
-        async function setPasswordAndFinish(password, seed) {
-            localStorage.setItem('eceWalletPasswordHash', hashPassword(password));
-            await initWalletFromSeed(seed);
-            setupScreen.classList.add('hidden');
-            passwordScreen.classList.add('hidden');
-            dashboardScreen.classList.remove('hidden');
-        }
-
-        function showPasswordSetup(seed) {
-            passwordTitle.innerText = "Set Password";
-            passwordConfirm.classList.remove('hidden');
-            forgotPasswordBtn.classList.add('hidden');
-            passwordSubmitBtn.onclick = async () => {
-                const pwd = passwordInput.value;
-                const confirm = passwordConfirm.value;
-                if (pwd.length < 4) { passwordMessage.innerText = "Password must be at least 4 characters"; return; }
-                if (pwd !== confirm) { passwordMessage.innerText = "Passwords do not match"; return; }
-                await setPasswordAndFinish(pwd, seed);
-            };
-            passwordScreen.classList.remove('hidden');
-        }
-
-        function showPasswordUnlock() {
-            passwordTitle.innerText = "Enter Password";
-            passwordConfirm.classList.add('hidden');
-            forgotPasswordBtn.classList.remove('hidden');
-            passwordSubmitBtn.onclick = async () => {
-                const pwd = passwordInput.value;
-                if (verifyPassword(pwd)) {
-                    const seed = localStorage.getItem('eceWalletSeed');
-                    await initWalletFromSeed(seed);
-                    passwordScreen.classList.add('hidden');
-                    dashboardScreen.classList.remove('hidden');
-                } else {
-                    passwordMessage.innerText = "Incorrect password";
-                }
-            };
-            forgotPasswordBtn.onclick = () => {
-                passwordScreen.classList.add('hidden');
-                forgotModal.classList.remove('hidden');
-            };
-            passwordScreen.classList.remove('hidden');
-        }
-
-        // DOM elements
-        const setupScreen = document.getElementById('setupScreen');
-        const passwordScreen = document.getElementById('passwordScreen');
-        const forgotModal = document.getElementById('forgotModal');
-        const dashboardScreen = document.getElementById('dashboardScreen');
-        const createWalletBtn = document.getElementById('createWalletBtn');
-        const importWalletBtn = document.getElementById('importWalletBtn');
-        const importSection = document.getElementById('importSection');
-        const importMnemonic = document.getElementById('importMnemonic');
-        const doImportBtn = document.getElementById('doImportBtn');
-        const newMnemonicDisplay = document.getElementById('newMnemonicDisplay');
-        const mnemonicWordsSpan = document.getElementById('mnemonicWords');
-        const confirmSeedBtn = document.getElementById('confirmSeedBtn');
-        const walletError = document.getElementById('walletError');
-        const passwordTitle = document.getElementById('passwordTitle');
-        const passwordInput = document.getElementById('passwordInput');
-        const passwordConfirm = document.getElementById('passwordConfirm');
-        const passwordSubmitBtn = document.getElementById('passwordSubmitBtn');
-        const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
-        const passwordMessage = document.getElementById('passwordMessage');
-        const recoverySeed = document.getElementById('recoverySeed');
-        const recoverBtn = document.getElementById('recoverBtn');
-        const cancelRecoverBtn = document.getElementById('cancelRecoverBtn');
-        const recoveryMessage = document.getElementById('recoveryMessage');
-        const userAddressSpan = document.getElementById('userAddress');
-        const eceBalanceSpan = document.getElementById('eceBalance');
-        const nativeBalanceSpan = document.getElementById('nativeBalance');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const networkSelect = document.getElementById('networkSelect');
-        const adminPanel = document.getElementById('adminPanel');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const depositAddressSpan = document.getElementById('depositAddress');
-        const sendTo = document.getElementById('sendTo');
-        const sendAmount = document.getElementById('sendAmount');
-        const sendToken = document.getElementById('sendToken');
-        const sendBtn = document.getElementById('sendBtn');
-        const sendStatus = document.getElementById('sendStatus');
-
-        // Wallet creation/import
-        createWalletBtn.addEventListener('click', () => {
-            const wallet = ethers.Wallet.createRandom();
-            mnemonicWordsSpan.innerText = wallet.mnemonic.phrase;
-            newMnemonicDisplay.classList.remove('hidden');
-            window.tempWallet = wallet;
-        });
-        confirmSeedBtn.addEventListener('click', () => {
-            if (window.tempWallet) showPasswordSetup(window.tempWallet.mnemonic.phrase);
-            newMnemonicDisplay.classList.add('hidden');
-        });
-        importWalletBtn.addEventListener('click', () => importSection.classList.toggle('hidden'));
-        doImportBtn.addEventListener('click', () => {
-            const input = importMnemonic.value.trim();
-            if (!input) { walletError.innerText = "Please enter seed phrase or private key"; return; }
-            try {
-                let wallet;
-                if (input.split(' ').length === 12 && ethers.utils.isMnemonicValid(input)) {
-                    wallet = ethers.Wallet.fromMnemonic(input);
-                } else if (input.match(/^(0x)?[0-9a-fA-F]{64}$/)) {
-                    const pk = input.startsWith('0x') ? input : '0x' + input;
-                    wallet = new ethers.Wallet(pk);
-                } else throw new Error('Invalid');
-                showPasswordSetup(wallet.mnemonic.phrase);
-                importSection.classList.add('hidden');
-                walletError.innerText = '';
-            } catch (err) { walletError.innerText = err.message; }
-        });
-        logoutBtn.addEventListener('click', () => {
-            currentWallet = null;
-            dashboardScreen.classList.add('hidden');
-            showPasswordUnlock();
-        });
-        recoverBtn.addEventListener('click', async () => {
-            const seed = recoverySeed.value.trim();
-            if (!seed || !ethers.utils.isMnemonicValid(seed)) return;
-            const newPassword = prompt('Enter a new password:');
-            if (!newPassword) return;
-            localStorage.setItem('eceWalletPasswordHash', hashPassword(newPassword));
-            localStorage.setItem('eceWalletSeed', seed);
-            await initWalletFromSeed(seed);
-            forgotModal.classList.add('hidden');
-            passwordScreen.classList.add('hidden');
-            dashboardScreen.classList.remove('hidden');
-        });
-        cancelRecoverBtn.addEventListener('click', () => {
-            forgotModal.classList.add('hidden');
-            showPasswordUnlock();
-        });
-
-        // Send function with status
-        sendBtn.addEventListener('click', async () => {
-            if (!currentWallet) { sendStatus.innerText = "No wallet loaded"; sendStatus.className = "tx-status tx-error"; sendStatus.classList.remove('hidden'); return; }
-            const to = sendTo.value.trim(), amount = parseFloat(sendAmount.value.trim());
-            if (!to || !amount) { sendStatus.innerText = "Fill recipient and amount"; sendStatus.className = "tx-status tx-error"; sendStatus.classList.remove('hidden'); return; }
-            sendStatus.innerText = "⏳ Sending..."; sendStatus.className = "tx-status"; sendStatus.classList.remove('hidden');
-            try {
-                if (sendToken.value === "ece") {
-                    if (!contract) throw new Error("ECE only on BSC");
-                    const decimals = await contract.decimals();
-                    const tx = await contract.transfer(to, ethers.utils.parseUnits(amount.toString(), decimals));
-                    sendStatus.innerText = "⏳ Waiting for confirmation...";
-                    const receipt = await tx.wait();
-                    if (receipt.status === 1) {
-                        sendStatus.innerText = "✅ Transfer successful!";
-                        sendStatus.className = "tx-status tx-success";
-                        setTimeout(() => updateBalances(), 2000);
-                    } else throw new Error("Transaction failed");
-                } else {
-                    const amountWei = ethers.utils.parseEther(amount.toString());
-                    const tx = await currentWallet.sendTransaction({ to, value: amountWei });
-                    sendStatus.innerText = "⏳ Waiting for confirmation...";
-                    const receipt = await tx.wait();
-                    if (receipt.status === 1) {
-                        sendStatus.innerText = "✅ Native token sent!";
-                        sendStatus.className = "tx-status tx-success";
-                        setTimeout(() => updateBalances(), 2000);
-                    } else throw new Error("Transaction failed");
-                }
-                sendTo.value = ""; sendAmount.value = "";
-            } catch (err) { sendStatus.innerText = "❌ Error: " + err.message; sendStatus.className = "tx-status tx-error"; }
-        });
-
-        networkSelect.addEventListener('change', async () => { if (currentWallet) await initWalletFromSeed(localStorage.getItem('eceWalletSeed')); });
-        refreshBtn.addEventListener('click', updateBalances);
-
-        // Tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-                btn.classList.add('tab-active');
-                const tabId = btn.dataset.tab;
-                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
-                document.getElementById(tabId+'-tab').classList.remove('hidden');
-                if (tabId === 'chat' && currentWallet) loadChatMessages();
-            });
-        });
-        document.querySelector('.tab-btn').classList.add('tab-active');
-
-        // Chat functions
-        async function loadChatMessages() {
-            if (!currentWallet) return;
-            const { data, error } = await supabase.from('chat_messages').select('*').eq('user_wallet', currentWallet.address).order('created_at', { ascending: true });
-            if (error) return;
-            const container = document.getElementById('chatMessages');
-            container.innerHTML = '';
-            data.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `chat-message ${msg.is_admin ? 'chat-admin' : 'chat-user'}`;
-                div.innerHTML = `<p><span class="font-bold ${msg.is_admin ? 'text-amber-400' : 'text-blue-400'}">${msg.is_admin ? 'Admin' : 'You'}:</span> ${msg.message}</p><p class="text-xs text-gray-500">${new Date(msg.created_at).toLocaleString()}</p>`;
-                container.appendChild(div);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-        async function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message || !currentWallet) return;
-            const { error } = await supabase.from('chat_messages').insert([{ user_wallet: currentWallet.address, message, is_admin: false }]);
-            if (error) return;
-            input.value = '';
-            await loadChatMessages();
-        }
-        document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
-        function subscribeToChat() { if (chatSubscription) supabase.removeSubscription(chatSubscription); chatSubscription = supabase.channel('chat-messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `user_wallet=eq.${currentWallet?.address}` }, () => loadChatMessages()).subscribe(); }
-
-        // Market data
-        async function fetchPrice() {
-            try {
-                const res = await axios.get(`https://api.dexscreener.com/latest/dex/search?q=${CONTRACT_ADDRESS}`);
-                if (res.data.pairs && res.data.pairs.length) {
-                    const pair = res.data.pairs[0];
-                    document.getElementById('ecePrice').innerText = `$${parseFloat(pair.priceUsd).toFixed(8)}`;
-                    document.getElementById('marketCap').innerText = pair.fdv ? `$${parseFloat(pair.fdv).toLocaleString()}` : '--';
-                    document.getElementById('volume').innerText = pair.volume?.h24 ? `$${parseFloat(pair.volume.h24).toLocaleString()}` : '--';
-                    document.getElementById('liquidity').innerText = pair.liquidity?.usd ? `$${parseFloat(pair.liquidity.usd).toLocaleString()}` : '--';
-                } else document.getElementById('ecePrice').innerText = '$0.00';
-            } catch(e) {}
-        }
-        async function fetchTokenInfo() {
-            try {
-                const prov = new ethers.providers.JsonRpcProvider(ALCHEMY_BSC_URL);
-                const tmp = new ethers.Contract(CONTRACT_ADDRESS, ABI, prov);
-                const total = await tmp.totalSupply();
-                const decimals = await tmp.decimals();
-                document.getElementById('totalSupply').innerText = ethers.utils.formatUnits(total, decimals) + ' ECE';
-            } catch(e) {}
-        }
-        fetchPrice(); setInterval(fetchPrice, 30000); fetchTokenInfo();
-
-        // Settings change password & reveal seed
-        document.getElementById('changePasswordBtn').addEventListener('click', () => {
-            const old = document.getElementById('oldPassword').value, newPwd = document.getElementById('newPassword').value, confirm = document.getElementById('confirmNewPassword').value, msgDiv = document.getElementById('passwordChangeMsg');
-            if (!verifyPassword(old)) { msgDiv.innerText = "Current password incorrect"; return; }
-            if (newPwd.length < 4) { msgDiv.innerText = "New password too short"; return; }
-            if (newPwd !== confirm) { msgDiv.innerText = "New passwords do not match"; return; }
-            localStorage.setItem('eceWalletPasswordHash', hashPassword(newPwd));
-            msgDiv.innerText = "Password changed successfully!";
-        });
-        document.getElementById('revealSeedBtn').addEventListener('click', () => {
-            if (!verifyPassword(document.getElementById('revealSeedPassword').value)) { alert("Incorrect password"); return; }
-            const seed = localStorage.getItem('eceWalletSeed');
-            document.getElementById('seedDisplay').innerText = seed; document.getElementById('seedDisplay').classList.remove('hidden');
-        });
-
-        // Initial load
-        window.addEventListener('load', async () => {
-            const hasWallet = localStorage.getItem('eceWalletSeed');
-            if (hasWallet) showPasswordUnlock();
-            else setupScreen.classList.remove('hidden');
-        });
-    </script>
+    
+    <!-- MODALS -->
+    <div id="storage-password-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6"><h3 class="text-xl font-bold">🔐 Storage Password</h3><p class="text-sm text-gray-300 mt-1">Enter password to unlock wallet</p><input type="password" id="storage-password-input" class="w-full mt-4 p-3 bg-black/50 rounded-xl border border-cyan-500/50 text-white" placeholder="Storage password"><p id="password-error" class="text-red-400 text-sm mt-2 hidden"></p><div class="flex gap-3 mt-6"><button id="confirm-password-btn" class="btn-primary flex-1 py-2 rounded-xl">Unlock</button><button id="cancel-password-btn" class="bg-gray-700 flex-1 py-2 rounded-xl">Cancel</button></div></div></div>
+    <div id="setup-wallet-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6 text-center"><i class="fas fa-wallet text-5xl text-cyan-400"></i><h3 class="text-2xl font-bold mt-2">Welcome to Eternal</h3><p class="text-gray-300">No wallet found. Create or import.</p><div class="mt-5 space-y-3"><button id="setup-create-btn" class="w-full btn-primary py-2 rounded-xl">✨ Create New Wallet</button><button id="setup-import-btn" class="w-full border border-cyan-500 py-2 rounded-xl">📂 Import Existing Wallet</button><button id="setup-logout" class="w-full text-gray-400 text-sm mt-2">Logout</button></div></div></div>
+    <div id="send-token-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6"><h3>Send EfikCoin</h3><input id="send-to-address" placeholder="Recipient address (0x...)" class="w-full mt-3 p-3 bg-black/50 rounded-xl"><input id="send-amount" placeholder="Amount (EFIK)" class="w-full mt-3 p-3 bg-black/50 rounded-xl"><p id="send-status" class="text-sm mt-2"></p><div class="flex gap-3 mt-5"><button id="send-token-submit" class="btn-primary flex-1 py-2 rounded-xl">Send</button><button id="close-send-modal" class="bg-gray-700 flex-1 py-2 rounded-xl">Cancel</button></div></div></div>
+    <div id="create-wallet-modal" class="fixed inset-0 bg-black/80 overflow-auto flex items-center justify-center z-50 hidden"><div class="glass-card w-full max-w-md p-6 m-4"><h3>✨ Create New Wallet</h3><button id="generate-mnemonic-btn" class="mt-3 bg-cyan-600 w-full py-2 rounded-xl">Generate Seed Phrase</button><div id="mnemonic-display" class="bg-black/50 p-3 rounded-lg text-sm font-mono break-words mt-3"></div><label class="flex items-center gap-2 mt-3 text-sm"><input type="checkbox" id="backup-check"> I have backed up my seed phrase</label><input type="password" id="create-pwd" placeholder="Storage Password (min 6)" class="w-full mt-3 p-3 bg-black/50 rounded-xl"><input type="password" id="create-pwd2" placeholder="Confirm Password" class="w-full mt-2 p-3 bg-black/50 rounded-xl"><p id="create-error" class="text-red-400 text-sm hidden"></p><div class="flex gap-3 mt-5"><button id="confirm-create-wallet" class="btn-primary flex-1 py-2 rounded-xl">Create Wallet</button><button id="close-create-modal" class="bg-gray-700 flex-1 py-2 rounded-xl">Cancel</button></div></div></div>
+    <div id="import-wallet-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-full max-w-md p-6"><h3>Import Wallet</h3><select id="import-method" class="w-full mt-3 p-2 bg-black/50 rounded-xl"><option value="privateKey">Private Key</option><option value="mnemonic">Seed Phrase (12/24 words)</option></select><div id="private-key-div"><input id="private-key-input" placeholder="Private key (0x...)" class="w-full mt-3 p-3 bg-black/50 rounded-xl"></div><div id="mnemonic-div" class="hidden"><textarea id="mnemonic-input" placeholder="Enter seed phrase words separated by space" rows="3" class="w-full mt-3 p-3 bg-black/50 rounded-xl"></textarea></div><input type="password" id="import-pwd" placeholder="Set Storage Password (min 6)" class="w-full mt-3 p-3 bg-black/50 rounded-xl"><p id="import-error" class="text-red-400 text-sm hidden"></p><div class="flex gap-3 mt-5"><button id="confirm-import-wallet" class="btn-primary flex-1 py-2 rounded-xl">Import & Save</button><button id="close-import-modal" class="bg-gray-700 flex-1 py-2 rounded-xl">Cancel</button></div></div></div>
 </body>
 </html>
