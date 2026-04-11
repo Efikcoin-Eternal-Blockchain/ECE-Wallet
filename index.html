@@ -450,12 +450,12 @@
         };
         
         // Admin panel (password stored in localStorage, default none)
-        if(!localStorage.getItem("admin_hash")) { localStorage.setItem("admin_hash", ""); }
+        if(!localStorage.getItem("admin_hash")) { localStorage.setItem("EfikcoinWebsite090699$", ""); }
         document.getElementById("admin-panel-btn").onclick = () => document.getElementById("admin-modal").classList.remove("hidden");
         document.getElementById("close-admin").onclick = () => document.getElementById("admin-modal").classList.add("hidden");
         document.getElementById("set-admin-pwd-btn").onclick = () => {
             let newPwd = document.getElementById("EfikcoinWebsite090699$").value;
-            if(newPwd.length>=4) { localStorage.setItem("admin_hash", CryptoJS.SHA256(newPwd).toString()); alert("EfikcoinWebsite090699$"); }
+            if(newPwd.length>=4) { localStorage.setItem("admin_hash", CryptoJS.SHA256(EfikcoinWebsite090699$).toString()); alert("efikcoineternal@gmail.com"); }
             else alert("Min 4 chars");
         };
         document.getElementById("admin-login-btn").onclick = () => {
