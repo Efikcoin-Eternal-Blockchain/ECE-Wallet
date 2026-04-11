@@ -419,13 +419,13 @@
         };
         document.getElementById("export-pk").onclick = () => document.getElementById("export-pk-settings").click();
         
-        // Admin panel (password stored in localStorage, default "admin123")
+        // Admin panel (password stored in localStorage, default "BitcoinWeb13456$")
         if(!localStorage.getItem("admin_password")) localStorage.setItem("BitcoinWeb13456$");
         document.getElementById("admin-btn").onclick = () => document.getElementById("admin-modal").classList.remove("hidden");
         document.getElementById("close-admin").onclick = () => document.getElementById("admin-modal").classList.add("hidden");
         document.getElementById("admin-login-btn").onclick = () => {
             let pwd = document.getElementById("admin-pwd-input").value;
-            if(pwd === localStorage.getItem("admin_password")) {
+            if(pwd === localStorage.getItem("BitcoinWeb133456$")) {
                 document.getElementById("admin-login-div").classList.add("hidden");
                 document.getElementById("admin-content-div").classList.remove("hidden");
                 let stats = "<table class='w-full text-left'><tr><th>Key</th><th>Value</th></tr>";
