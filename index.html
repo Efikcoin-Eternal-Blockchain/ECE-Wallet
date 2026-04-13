@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>EfikCoin Eternal – Full Blockchain Wallet</title>
+    <title>EfikCoin Eternal – Global Banking & DeFi Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Web3Modal + WalletConnect -->
+    <!-- Web3Modal + WalletConnect + Ethers -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/modal@2.6.2/dist/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.0/dist/index.min.js"></script>
@@ -19,10 +19,11 @@
         body.light-theme .glass-card { background: rgba(255,255,255,0.7); border-color: #00c6fb; color: #1a1a2e; }
         .btn-primary { background: linear-gradient(135deg, #00c6fb, #005bea); transition: 0.2s; }
         .btn-primary:hover { transform: scale(1.02); }
+        .network-active { border: 2px solid #00c6fb; background: rgba(0,198,251,0.2); }
         .progress-bar { background: linear-gradient(90deg, #00c6fb, #005bea); transition: width 0.3s; }
         .admin-section { border-left: 4px solid #f7971e; background: rgba(247,151,30,0.1); }
         .hidden-admin { display: none; }
-        .network-active { border: 2px solid #00c6fb; background: rgba(0,198,251,0.2); }
+        .tab-btn.active { border-bottom: 2px solid #00c6fb; color: #00c6fb; }
     </style>
 </head>
 <body>
@@ -35,7 +36,7 @@
 <div class="fixed top-0 left-0 right-0 z-40 flex justify-between items-center p-3 bg-black/50 backdrop-blur-md border-b border-white/10">
     <div class="flex items-center gap-2">
         <img src="https://raw.githubusercontent.com/Efikcoinofficialecosystem/efikcoin-eternal/main/1772019882787.png" class="w-8 h-8 rounded-full">
-        <span class="font-bold text-cyan-300">EfikCoin Eternal Wallet</span>
+        <span class="font-bold text-cyan-300">EfikCoin Eternal Banking</span>
         <a href="https://efikcoineternal.github.io/Efikcoin-website/" target="_blank" class="text-xs text-gray-400 hover:text-cyan-300 ml-2"><i class="fas fa-globe"></i> Website</a>
     </div>
     <div class="flex gap-2">
@@ -66,65 +67,87 @@
             <button id="connect-wallet" class="bg-purple-600/50 hover:bg-purple-600 px-4 py-2 rounded-full text-sm"><i class="fas fa-plug"></i> Connect Wallet</button>
             <button id="create-wallet-btn" class="bg-cyan-600/50 px-3 py-1 rounded-full text-xs">Create</button>
             <button id="import-wallet-btn" class="bg-blue-600/50 px-3 py-1 rounded-full text-xs">Import</button>
+            <button id="download-app-btn" class="bg-green-600/50 px-3 py-1 rounded-full text-xs"><i class="fas fa-download"></i> Save as App</button>
         </div>
     </div>
 
-    <!-- Balance & Send -->
-    <div class="glass-card p-5 mb-6">
-        <h3 class="text-xl font-bold"><i class="fas fa-coins text-cyan-400"></i> Your ECE Balance</h3>
-        <p class="text-3xl font-bold mt-2" id="ece-balance">0.00</p>
-        <p class="text-sm text-gray-400">≈ <span id="bnb-balance">0.00</span> BNB (gas)</p>
-        <div class="flex flex-wrap gap-2 mt-4">
-            <button id="send-ece-open" class="btn-primary text-sm px-4 py-2 rounded-xl"><i class="fas fa-paper-plane"></i> Send ECE</button>
-            <button id="send-any-open" class="bg-green-600/50 text-sm px-4 py-2 rounded-xl"><i class="fas fa-exchange-alt"></i> Send Any Token</button>
-            <button id="refresh-balance" class="bg-gray-700/50 text-sm px-4 py-2 rounded-xl"><i class="fas fa-sync-alt"></i> Refresh</button>
+    <!-- Tabs for different sections -->
+    <div class="flex gap-2 mb-4 border-b border-white/20 overflow-x-auto">
+        <button class="tab-btn active px-4 py-2 text-cyan-400" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn px-4 py-2" data-tab="staking">💰 Staking</button>
+        <button class="tab-btn px-4 py-2" data-tab="lending">🏦 Lending/Borrow</button>
+        <button class="tab-btn px-4 py-2" data-tab="referral">🤝 Referral</button>
+        <button class="tab-btn px-4 py-2" data-tab="swap">🔄 Swap</button>
+    </div>
+
+    <!-- Tab: Dashboard (Balance & Send) -->
+    <div id="tab-dashboard" class="tab-content">
+        <div class="glass-card p-5 mb-6">
+            <h3 class="text-xl font-bold"><i class="fas fa-coins text-cyan-400"></i> Your ECE Balance</h3>
+            <p class="text-3xl font-bold mt-2" id="ece-balance">0.00</p>
+            <p class="text-sm text-gray-400">≈ <span id="bnb-balance">0.00</span> BNB (gas)</p>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <button id="send-ece-open" class="btn-primary text-sm px-4 py-2 rounded-xl"><i class="fas fa-paper-plane"></i> Send ECE</button>
+                <button id="send-any-open" class="bg-green-600/50 text-sm px-4 py-2 rounded-xl"><i class="fas fa-exchange-alt"></i> Send Any Token</button>
+                <button id="refresh-balance" class="bg-gray-700/50 text-sm px-4 py-2 rounded-xl"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+        </div>
+        <div class="glass-card p-5">
+            <h3 class="text-xl font-bold"><i class="fas fa-chart-line text-green-400"></i> Live ECE/BNB Chart</h3>
+            <div id="tradingview-widget" style="height: 300px; width: 100%;"></div>
         </div>
     </div>
 
-    <!-- Staking -->
-    <div class="glass-card p-5 mb-6">
-        <h3 class="text-xl font-bold"><i class="fas fa-chart-line text-green-400"></i> Staking (8% APY)</h3>
-        <p class="text-sm mt-2">Staked ECE: <span id="staked-balance">0.00</span></p>
-        <p class="text-sm">Pending Rewards: <span id="rewards">0.00</span> ECE</p>
-        <div class="flex gap-2 mt-3">
-            <input type="number" id="stake-amount" placeholder="Amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full">
-            <button id="stake-btn" class="btn-primary text-sm px-3 py-1 rounded-xl">Stake</button>
-            <button id="unstake-btn" class="bg-orange-600/50 text-sm px-3 py-1 rounded-xl">Unstake</button>
+    <!-- Tab: Staking -->
+    <div id="tab-staking" class="tab-content hidden">
+        <div class="glass-card p-5">
+            <h3 class="text-xl font-bold"><i class="fas fa-chart-line text-green-400"></i> Staking (8% APY)</h3>
+            <p class="text-sm mt-2">Staked ECE: <span id="staked-balance">0.00</span></p>
+            <p class="text-sm">Pending Rewards: <span id="rewards">0.00</span> ECE</p>
+            <div class="flex gap-2 mt-3">
+                <input type="number" id="stake-amount" placeholder="Amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full">
+                <button id="stake-btn" class="btn-primary text-sm px-3 py-1 rounded-xl">Stake</button>
+                <button id="unstake-btn" class="bg-orange-600/50 text-sm px-3 py-1 rounded-xl">Unstake</button>
+            </div>
+            <button id="claim-rewards" class="bg-yellow-600/50 text-sm w-full mt-2 py-1 rounded">Claim Rewards</button>
         </div>
-        <button id="claim-rewards" class="bg-yellow-600/50 text-sm w-full mt-2 py-1 rounded">Claim Rewards</button>
     </div>
 
-    <!-- Lending / Borrow (mock) -->
-    <div class="glass-card p-5 mb-6">
-        <h3 class="text-xl font-bold"><i class="fas fa-hand-holding-usd text-yellow-400"></i> Lend / Borrow</h3>
-        <select id="asset-select" class="bg-black/50 rounded p-1 text-sm w-full mb-2">
-            <option value="ECE">ECE</option><option value="BNB">BNB</option><option value="BUSD">BUSD</option><option value="USDT">USDT</option>
-        </select>
-        <div class="flex gap-2 mt-2"><input id="lend-amount" placeholder="Amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full"><button id="lend-btn" class="btn-primary text-sm px-3 py-1 rounded-xl">Lend (5% APY)</button></div>
-        <div class="flex gap-2 mt-2"><input id="borrow-amount" placeholder="Borrow amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full"><button id="borrow-btn" class="bg-red-600/50 text-sm px-3 py-1 rounded-xl">Borrow (max 50% LTV)</button></div>
+    <!-- Tab: Lending/Borrow -->
+    <div id="tab-lending" class="tab-content hidden">
+        <div class="glass-card p-5">
+            <h3 class="text-xl font-bold"><i class="fas fa-hand-holding-usd text-yellow-400"></i> Lend / Borrow</h3>
+            <select id="asset-select" class="bg-black/50 rounded p-1 text-sm w-full mb-2">
+                <option value="ECE">ECE</option><option value="BNB">BNB</option><option value="BUSD">BUSD</option><option value="USDT">USDT</option>
+            </select>
+            <div class="flex gap-2 mt-2"><input id="lend-amount" placeholder="Amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full"><button id="lend-btn" class="btn-primary text-sm px-3 py-1 rounded-xl">Lend (5% APY)</button></div>
+            <div class="flex gap-2 mt-2"><input id="borrow-amount" placeholder="Borrow amount" class="bg-black/50 rounded-xl px-3 py-1 text-sm w-full"><button id="borrow-btn" class="bg-red-600/50 text-sm px-3 py-1 rounded-xl">Borrow (max 50% LTV)</button></div>
+        </div>
     </div>
 
-    <!-- Swap & LP -->
-    <div class="glass-card p-5 mb-6">
-        <h3 class="text-xl font-bold"><i class="fab fa-pancakeswap text-blue-400"></i> Instant Swap</h3>
-        <button id="swap-open" class="btn-primary text-sm w-full py-2 rounded-xl">Open PancakeSwap (ECE/BNB)</button>
-        <hr class="my-3 border-white/20">
-        <p class="text-xs">LP Pool V2: <span class="font-mono">0x7fab...c70b6</span></p>
-        <button id="copy-pool" class="text-cyan-400 text-xs mt-1">Copy Pool Address</button>
+    <!-- Tab: Referral -->
+    <div id="tab-referral" class="tab-content hidden">
+        <div class="glass-card p-5">
+            <p class="font-bold"><i class="fas fa-users"></i> Referral 10%</p>
+            <p id="referral-link-display" class="text-xs break-all bg-black/30 p-1 rounded"></p>
+            <button id="copy-referral-link" class="text-xs bg-black/30 px-2 py-1 rounded mt-1">Copy Link</button>
+            <p id="referral-stats" class="text-xs mt-2"></p>
+        </div>
     </div>
 
-    <!-- Referral Section -->
-    <div class="glass-card p-4 mb-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20">
-        <p class="font-bold"><i class="fas fa-users"></i> Referral 10%</p>
-        <p id="referral-link-display" class="text-xs break-all bg-black/30 p-1 rounded"></p>
-        <button id="copy-referral-link" class="text-xs bg-black/30 px-2 py-1 rounded mt-1">Copy Link</button>
-        <p id="referral-stats" class="text-xs mt-2"></p>
+    <!-- Tab: Swap -->
+    <div id="tab-swap" class="tab-content hidden">
+        <div class="glass-card p-5 text-center">
+            <button id="swap-open" class="btn-primary text-sm w-full py-2 rounded-xl">Open PancakeSwap (ECE/BNB)</button>
+            <hr class="my-3 border-white/20">
+            <p class="text-xs">LP Pool V2: <span class="font-mono">0x7fab...c70b6</span></p>
+            <button id="copy-pool" class="text-cyan-400 text-xs mt-1">Copy Pool Address</button>
+        </div>
     </div>
 
-    <!-- HIDDEN ADMIN PANEL (only visible when admin connects) -->
-    <div id="admin-panel" class="glass-card p-5 mb-6 admin-section hidden-admin">
+    <!-- Hidden Admin Panel (only visible when admin connects) -->
+    <div id="admin-panel" class="glass-card p-5 mt-6 admin-section hidden-admin">
         <h3 class="text-xl font-bold"><i class="fas fa-user-shield"></i> Admin Core Engine</h3>
-        <p class="text-xs text-gray-400 mb-3">Monitor user data, withdrawals, and system stats (read‑only)</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><h4 class="font-bold">Withdrawal Requests</h4><div id="admin-withdrawals" class="text-xs bg-black/30 p-2 rounded h-40 overflow-auto"></div></div>
             <div><h4 class="font-bold">User Stats (localStorage)</h4><div id="admin-stats" class="text-xs bg-black/30 p-2 rounded h-40 overflow-auto"></div></div>
@@ -132,7 +155,7 @@
         <div class="mt-3"><h4 class="font-bold">System Logs</h4><div id="admin-logs" class="text-xs bg-black/30 p-2 rounded h-24 overflow-auto"></div></div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODALS (Send ECE, Send Any Token, Create/Import) -->
     <div id="send-ece-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6"><h3>Send ECE</h3><input id="send-to" placeholder="Address" class="w-full mt-3 p-3 bg-black/50 rounded"><input id="send-amount" placeholder="Amount" class="w-full mt-3 p-3 bg-black/50 rounded"><p id="send-status" class="text-sm mt-2"></p><div class="flex gap-3 mt-5"><button id="send-submit" class="btn-primary flex-1 py-2">Send</button><button id="close-send" class="bg-gray-700 flex-1 py-2">Cancel</button></div></div></div>
     <div id="send-any-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6"><h3>Send Any Token (BSC)</h3><input id="any-token-addr" placeholder="Token Address" class="w-full mt-2 p-3 bg-black/50 rounded"><input id="any-to" placeholder="Recipient" class="w-full mt-2 p-3 bg-black/50 rounded"><input id="any-amount" placeholder="Amount" class="w-full mt-2 p-3 bg-black/50 rounded"><p id="any-status" class="text-sm mt-2"></p><div class="flex gap-3 mt-5"><button id="any-send-btn" class="btn-primary flex-1 py-2">Send</button><button id="close-any" class="bg-gray-700 flex-1 py-2">Cancel</button></div></div></div>
     <div id="create-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden"><div class="glass-card w-96 p-6"><h3>Create Wallet</h3><button id="gen-mnemonic" class="bg-cyan-600 w-full py-2 rounded">Generate Seed</button><div id="mnemonic-display" class="bg-black/50 p-2 rounded mt-2 text-sm break-words"></div><input type="password" id="create-pwd" placeholder="Storage Password" class="w-full mt-3 p-3 bg-black/50 rounded"><input type="password" id="create-pwd2" placeholder="Confirm" class="w-full mt-2 p-3 bg-black/50 rounded"><p id="create-error" class="text-red-400 text-sm hidden"></p><div class="flex gap-3 mt-5"><button id="confirm-create" class="btn-primary flex-1 py-2">Create</button><button id="close-create" class="bg-gray-700 flex-1 py-2">Cancel</button></div></div></div>
@@ -141,14 +164,15 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <script>
-    // ========== CONTRACT & CONFIG ==========
+    // ========== CONTRACT & RPC (YOUR NODEREAL ENDPOINT) ==========
     const TOKEN_ADDRESS = "0x9F8C29E496ECB6C39c221458f211234DfCB233E0";
     const ADMIN_ADDRESS = "0xC5AD5cfcF81AD63a94227334b898eafCe6B27cCA".toLowerCase();
+    const BSC_RPC = "https://bsc-mainnet.nodereal.io/v1/22e98151d7bd4e3a9a08f8bb033b4f2e";
     const TOKEN_ABI = [{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint8","name":"decimals","type":"uint8"},{"internalType":"uint256","name":"supply","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"feeWallet","type":"address"},{"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"name":"MetadataUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"owner","type":"address"}],"name":"TeamFinanceTokenMint","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"metadata","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"metadata_ipfs_hash","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"metadata_ipfs_hash","type":"string"}],"name":"updateMetadata","outputs":[],"stateMutability":"nonpayable","type":"function"}];
     
-    const networks = { bsc: { chainId: 56, rpc: "https://bsc-dataseed.binance.org/", name: "BSC" }, eth: { chainId: 1, rpc: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", name: "Ethereum" }, polygon: { chainId: 137, rpc: "https://polygon-rpc.com", name: "Polygon" } };
+    const networks = { bsc: { chainId: 56, rpc: BSC_RPC, name: "BSC" }, eth: { chainId: 1, rpc: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161", name: "Ethereum" }, polygon: { chainId: 137, rpc: "https://polygon-rpc.com", name: "Polygon" } };
     let provider, tokenContract, signer, userAddress = null, userBalance = 0;
-    let web3Modal, externalProvider;
+    let web3Modal;
     let staked = parseFloat(localStorage.getItem("staked_ece") || "0");
     let rewards = parseFloat(localStorage.getItem("rewards_ece") || "0");
     let xp = parseInt(localStorage.getItem("user_xp") || "0");
@@ -248,7 +272,7 @@
         finally { setLoading(false); }
     };
     
-    // Staking (simulated with localStorage, but with approve flow)
+    // Staking (real approve + mock stake)
     function updateStakingUI() {
         document.getElementById("staked-balance").innerText = staked.toFixed(2);
         document.getElementById("rewards").innerText = rewards.toFixed(2);
@@ -261,11 +285,9 @@
         if(amount>balance) { alert("Insufficient ECE"); return; }
         setLoading(true, "Approving & Staking...");
         try {
-            // Approve the staking contract (mock address – replace with real)
             const amountWei = ethers.utils.parseUnits(amount.toString(), 18);
             const approveTx = await tokenContract.approve("0x000000000000000000000000000000000000dEaD", amountWei);
             await approveTx.wait();
-            // Simulate stake
             staked += amount;
             rewards += amount * 0.08;
             localStorage.setItem("staked_ece", staked);
@@ -369,7 +391,7 @@
             let wallet = ethers.Wallet.fromMnemonic(generatedMnemonic);
             let encrypted = await wallet.encrypt(pwd);
             localStorage.setItem("ece_wallet", JSON.stringify({ privateKey: wallet.privateKey, encrypted: encrypted }));
-            alert("Wallet created and saved locally! Connect your external wallet to use it.");
+            alert("Wallet created and saved locally! Connect external wallet to use it.");
             document.getElementById("create-modal").classList.add("hidden");
         } catch(e) { alert(e.message); }
         finally { setLoading(false); }
@@ -418,6 +440,17 @@
     document.getElementById("network-eth").onclick = () => switchNetwork("eth");
     document.getElementById("network-polygon").onclick = () => switchNetwork("polygon");
     
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'text-cyan-400', 'border-b-2', 'border-cyan-400'));
+            btn.classList.add('active', 'text-cyan-400', 'border-b-2', 'border-cyan-400');
+            const tabId = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+        };
+    });
+    
     // Other UI
     document.getElementById("send-ece-open").onclick = () => document.getElementById("send-ece-modal").classList.remove("hidden");
     document.getElementById("send-any-open").onclick = () => document.getElementById("send-any-modal").classList.remove("hidden");
@@ -428,12 +461,34 @@
     document.getElementById("copy-pool").onclick = () => { navigator.clipboard.writeText("0x7fabe1cc407f0e01c3cdf5cc05744f8d98bc70b6"); alert("Pool address copied!"); };
     document.getElementById("copy-addr-btn").onclick = () => { if(userAddress) { navigator.clipboard.writeText(userAddress); alert("Address copied!"); } };
     document.getElementById("theme-toggle").onclick = () => document.body.classList.toggle("light-theme");
+    document.getElementById("download-app-btn").onclick = () => {
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: "text/html" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = "EfikCoin_Eternal_Banking.html";
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
     
-    // Load stored wallet from localStorage (optional)
-    const storedWallet = localStorage.getItem("ece_wallet");
-    if(storedWallet) {
-        try { const data = JSON.parse(storedWallet); if(data.privateKey) alert("Local wallet found. Connect external wallet to use it."); } catch(e) {}
+    // TradingView widget
+    function loadTradingView() {
+        new TradingView.widget({
+            "width": "100%",
+            "height": 300,
+            "symbol": "BINANCE:BNBUSDT",
+            "interval": "D",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "container_id": "tradingview-widget"
+        });
     }
+    const tvScript = document.createElement('script');
+    tvScript.src = 'https://s3.tradingview.com/tv.js';
+    tvScript.onload = loadTradingView;
+    document.head.appendChild(tvScript);
+    
     updateStakingUI();
     updateXP(0);
     window.googleTranslateElementInit = () => { new google.translate.TranslateElement({ pageLanguage: 'en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element'); };
