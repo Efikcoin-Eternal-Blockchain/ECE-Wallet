@@ -54,3 +54,49 @@
    ```bash
    git clone https://github.com/efikcoin-eternal-blockchain/ECE-Wallet.git
    cd ECE-Wallet
+# Efikcoin Eternal – Renaming & Version Update Log
+
+This document tracks the official renaming and version changes for the **Efikcoin Eternal** project (formerly known as Efikcoin Legacy / ECE Beta).
+
+---
+
+## 🔄 Current Official Names
+
+| Component | Old Name (if any) | New Name (current) |
+|-----------|------------------|---------------------|
+| Token | Efikcoin Legacy (EFL) | **Efikcoin Eternal (ECE)** |
+| Wallet | Efikcoin Classic Wallet | **ECE Wallet** |
+| Blockchain Browser | Efikcoin Portal | **Efikcoin Eternal Engine Browser** |
+| RPC Endpoint | – | **ECE Custom RPC (Tenderly)** |
+| Banking System | – | **Efikcoin Eternal Banking Wallet** |
+
+---
+
+## 📅 Update Timeline
+
+- **2026-04-06 23:32** – Token contract deployed on BNB Smart Chain  
+  `0x9F8C29E496ECB6C39c221458f211234DfCB233E0`
+- **2026-04-10** – Wallet & website launched on GitHub Pages
+- **2026-04-13** – Project renamed to **Efikcoin Eternal**  
+  - Repositories moved to `efikcoin-eternal-blockchain` and `efikcoineternal` orgs
+  - Engine browser and banking system initiated
+
+---
+
+## 🧩 Why the rename?
+
+To reflect the project’s mission: **an eternal, unstoppable ecosystem** built by a single developer using DeepSeek AI. The name "Eternal" signifies:
+- No central authority shutdown
+- Immutable smart contracts
+- Permanent IPFS hosting for frontend
+
+---
+
+## 🔧 How to update your local references
+
+If you have cloned old repositories, update these files:
+
+### 1. `package.json`
+```json
+"name": "efikcoin-eternal-banking-wallet",
+"description": "Live wallet & banking system for Efikcoin Eternal (ECE)"
